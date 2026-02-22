@@ -1,0 +1,2224 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Ginza Bloom - オンライン予約 | SalonOS</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ============================================================
+       SALON OS — CUSTOMER BOOKING PAGE  v2.0
+       Design System: CSS Custom Properties + Component Classes
+       Mobile-first (375px base), max-width 480px on desktop
+       ============================================================ */
+
+    /* ─────────────────────────────────────────
+       1. DESIGN TOKENS
+       ───────────────────────────────────────── */
+    :root {
+      /* Brand */
+      --color-primary:       #f43f5e;
+      --color-primary-light: #fda4af;
+      --color-primary-dark:  #e11d48;
+      --color-primary-bg:    #fff1f2;
+      --color-primary-100:   #ffe4e6;
+      --color-accent:        #d4af37;
+      --color-accent-bg:     #fefce8;
+
+      /* Neutral */
+      --color-bg:            #f9fafb;
+      --color-surface:       #ffffff;
+      --color-surface-alt:   #f3f4f6;
+      --color-border:        #e5e7eb;
+      --color-border-light:  #f3f4f6;
+
+      /* Text */
+      --color-text:          #1f2937;
+      --color-text-2:        #374151;
+      --color-text-muted:    #6b7280;
+      --color-text-placeholder: #9ca3af;
+      --color-text-disabled: #d1d5db;
+
+      /* Semantic */
+      --color-success:       #10b981;
+      --color-success-bg:    #d1fae5;
+
+      /* Shadow */
+      --shadow-sm:  0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md:  0 4px 12px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.04);
+      --shadow-lg:  0 10px 30px rgba(0,0,0,.10), 0 4px 8px rgba(0,0,0,.05);
+      --shadow-rose: 0 4px 20px rgba(244,63,94,.25);
+
+      /* Radius */
+      --r-sm:   8px;
+      --r-md:   12px;
+      --r-lg:   16px;
+      --r-xl:   20px;
+      --r-full: 9999px;
+
+      /* Spacing */
+      --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px;
+      --sp-4: 16px; --sp-5: 20px; --sp-6: 24px;
+
+      /* Typography */
+      --font: 'Noto Sans JP', 'Inter', system-ui, sans-serif;
+
+      /* Transitions */
+      --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --dur-fast:   150ms;
+      --dur-normal: 250ms;
+      --dur-slow:   400ms;
+    }
+
+    /* ─────────────────────────────────────────
+       2. RESET & BASE
+       ───────────────────────────────────────── */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0; padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+
+    body {
+      font-family: var(--font);
+      font-size: 15px;
+      color: var(--color-text);
+      background: var(--color-bg);
+      line-height: 1.6;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button { font-family: inherit; cursor: pointer; border: none; background: none; }
+    input, textarea { font-family: inherit; }
+    ::-webkit-scrollbar { width: 0; height: 0; }
+
+    *:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+
+    /* ─────────────────────────────────────────
+       3. PAGE CONTAINER
+       ───────────────────────────────────────── */
+
+    /* .booking-page — モバイルファースト、最大480px中央配置 */
+    .booking-page {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: var(--color-surface);
+      position: relative;
+    }
+
+    @media (min-width: 520px) {
+      body { background: var(--color-bg); padding: 24px 0 60px; }
+      .booking-page {
+        min-height: calc(100vh - 84px);
+        border-radius: var(--r-xl);
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+      }
+    }
+
+    /* ─────────────────────────────────────────
+       4. SALON COVER / HEADER
+       ───────────────────────────────────────── */
+
+    /* .salon-cover — サロンカバー画像エリア */
+    .salon-cover {
+      position: relative;
+      height: 220px;
+      /* フォールバック: ブランドグラデーション */
+      background: linear-gradient(
+        135deg,
+        #1a0a0e 0%,
+        #3d0e1f 30%,
+        #6d1a32 60%,
+        #c0284a 100%
+      );
+      overflow: hidden;
+    }
+
+    /* カバー写真がある場合: <img class="salon-cover-img" ...> */
+    .salon-cover-img {
+      position: absolute;
+      inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      opacity: 0.75;
+    }
+
+    /* グラデーションオーバーレイ（写真の上にテキストを読みやすくする） */
+    .salon-cover::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,.08) 0%, rgba(0,0,0,.58) 100%);
+    }
+
+    /* .salon-hero-info — サロン名・評価・住所ブロック */
+    .salon-hero-info {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: var(--sp-5) var(--sp-5) var(--sp-6);
+      z-index: 1;
+    }
+
+    /* サロン名 */
+    .salon-name {
+      font-size: 24px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.3px;
+      line-height: 1.2;
+      margin-bottom: var(--sp-2);
+      text-shadow: 0 1px 4px rgba(0,0,0,.35);
+    }
+    .salon-name .salon-icon { font-size: 20px; margin-right: 6px; }
+
+    /* メタ情報（評価・住所）*/
+    .salon-meta { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; }
+
+    /* .salon-rating — 評価バッジ */
+    .salon-rating {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(255,255,255,.95);
+      padding: 3px 9px;
+      border-radius: var(--r-full);
+      font-size: 11px;
+      font-weight: 700;
+      backdrop-filter: blur(4px);
+    }
+    .salon-rating .star { color: var(--color-accent); font-size: 12px; }
+    .salon-rating .score { color: var(--color-text); }
+    .salon-rating .count { color: var(--color-text-muted); font-weight: 400; }
+
+    /* .salon-address — 住所 */
+    .salon-address {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: rgba(255,255,255,.9);
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .salon-address svg { width: 12px; height: 12px; opacity: .8; }
+
+    /* ─────────────────────────────────────────
+       5. STEPPER (ステップ進捗インジケーター)
+       ───────────────────────────────────────── */
+
+    /* .stepper — スティッキーなステップナビゲーター */
+    .stepper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px var(--sp-5) 12px;
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--color-border-light);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    /* .step-item — 各ステップ */
+    .step-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      flex: 1;
+      position: relative;
+    }
+
+    /* ステップ間コネクターライン */
+    .step-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 12px;
+      left: calc(50% + 14px);
+      right: calc(-50% + 14px);
+      height: 2px;
+      background: var(--color-border);
+      transition: background var(--dur-normal) var(--ease-out);
+    }
+    .step-item.completed:not(:last-child)::after { background: var(--color-primary); }
+
+    /* .step-dot — ステップの丸アイコン */
+    .step-dot {
+      width: 24px; height: 24px;
+      border-radius: var(--r-full);
+      border: 2px solid var(--color-border);
+      background: var(--color-surface);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700;
+      color: var(--color-text-placeholder);
+      position: relative; z-index: 1;
+      transition:
+        background var(--dur-normal) var(--ease-out),
+        border-color var(--dur-normal) var(--ease-out),
+        color var(--dur-normal) var(--ease-out),
+        transform var(--dur-fast) var(--ease-spring);
+    }
+
+    /* .step-item.active — 現在のステップ */
+    .step-item.active .step-dot {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: #fff;
+      transform: scale(1.15);
+      box-shadow: 0 0 0 4px var(--color-primary-100);
+    }
+
+    /* .step-item.completed — 完了済みステップ */
+    .step-item.completed .step-dot {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: #fff;
+    }
+
+    /* .step-label */
+    .step-label {
+      font-size: 10px; font-weight: 500;
+      color: var(--color-text-placeholder);
+      white-space: nowrap;
+      transition: color var(--dur-normal) var(--ease-out);
+    }
+    .step-item.active .step-label { color: var(--color-primary); font-weight: 700; }
+    .step-item.completed .step-label { color: var(--color-primary); }
+
+    /* ─────────────────────────────────────────
+       6. STEP PANELS (ステップコンテンツ)
+       ───────────────────────────────────────── */
+
+    .step-panels { position: relative; }
+
+    /* .step-panel — 各ステップのコンテンツラッパー */
+    .step-panel {
+      display: none;
+      padding: var(--sp-5);
+      padding-bottom: 120px; /* sticky-footer の高さ分 */
+    }
+    .step-panel.active { display: block; }
+
+    /* スライドアニメーション（前進） */
+    .step-panel.slide-fwd {
+      animation: slideInRight var(--dur-slow) var(--ease-out) both;
+    }
+    /* スライドアニメーション（後退） */
+    .step-panel.slide-bwd {
+      animation: slideInLeft var(--dur-slow) var(--ease-out) both;
+    }
+
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to   { opacity: 1; transform: translateX(0);    }
+    }
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to   { opacity: 1; transform: translateX(0);     }
+    }
+
+    /* ─────────────────────────────────────────
+       7. SECTION TYPOGRAPHY
+       ───────────────────────────────────────── */
+
+    .section-heading {
+      font-size: 15px; font-weight: 700;
+      color: var(--color-text);
+      margin-bottom: var(--sp-4);
+    }
+    .section-heading small {
+      display: block;
+      font-size: 11px; font-weight: 400;
+      color: var(--color-text-muted);
+      margin-top: 2px;
+    }
+
+    /* 戻るボタン付きステップヘッダー */
+    .step-nav-header {
+      display: flex; align-items: center;
+      gap: var(--sp-3); margin-bottom: var(--sp-5);
+    }
+
+    /* .back-btn — 戻るボタン */
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 13px; color: var(--color-text-muted);
+      padding: 6px 10px; border-radius: var(--r-sm);
+      transition: background var(--dur-fast), color var(--dur-fast);
+    }
+    .back-btn:hover { background: var(--color-surface-alt); color: var(--color-text); }
+    .back-btn svg { width: 16px; height: 16px; }
+
+    /* ─────────────────────────────────────────
+       8. MENU CARDS
+       ───────────────────────────────────────── */
+
+    /* .menu-grid — 2列グリッド */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--sp-3);
+      margin-bottom: var(--sp-3);
+    }
+
+    /* .menu-card — メニュー選択カード */
+    .menu-card {
+      position: relative;
+      background: var(--color-surface);
+      border: 2px solid var(--color-border);
+      border-radius: var(--r-lg);
+      padding: var(--sp-4);
+      cursor: pointer;
+      text-align: left;
+      overflow: hidden;
+      -webkit-user-select: none; user-select: none;
+      transition:
+        border-color var(--dur-fast) var(--ease-out),
+        box-shadow var(--dur-fast) var(--ease-out),
+        transform var(--dur-fast) var(--ease-spring);
+    }
+    .menu-card:hover { border-color: var(--color-primary-light); box-shadow: var(--shadow-sm); }
+    .menu-card:active { transform: scale(0.97); }
+
+    /* 選択時: rose枠 + 背景 */
+    .menu-card.selected {
+      border-color: var(--color-primary);
+      background: var(--color-primary-bg);
+      box-shadow: var(--shadow-rose);
+    }
+
+    /* カード左端のアクセントライン */
+    .menu-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 4px; height: 100%;
+      background: var(--color-border);
+      transition: background var(--dur-fast);
+    }
+    .menu-card.selected::before { background: var(--color-primary); }
+
+    /* .menu-card-check — 選択チェックマーク（右上） */
+    .menu-card-check {
+      position: absolute; top: 10px; right: 10px;
+      width: 20px; height: 20px;
+      border-radius: var(--r-full);
+      background: var(--color-primary);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0;
+      transform: scale(0) rotate(-30deg);
+      transition:
+        opacity var(--dur-fast) var(--ease-out),
+        transform var(--dur-normal) var(--ease-spring);
+    }
+    .menu-card.selected .menu-card-check {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+    }
+    .menu-card-check svg { width: 11px; height: 11px; color: #fff; }
+
+    /* メニューテキスト */
+    .menu-name {
+      font-size: 13px; font-weight: 700;
+      color: var(--color-text);
+      margin-bottom: var(--sp-2);
+      padding-left: 6px; line-height: 1.4;
+    }
+    .menu-price {
+      font-size: 16px; font-weight: 700;
+      color: var(--color-primary);
+      padding-left: 6px;
+      letter-spacing: -0.5px;
+    }
+    .menu-duration {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 11px; color: var(--color-text-muted);
+      margin-top: 4px; padding-left: 6px;
+    }
+    .menu-duration svg { width: 11px; height: 11px; }
+
+    /* .show-more-btn — もっと見るボタン */
+    .show-more-btn {
+      width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: var(--sp-2);
+      padding: var(--sp-3);
+      font-size: 13px; font-weight: 600;
+      color: var(--color-text-muted);
+      border: 1.5px dashed var(--color-border);
+      border-radius: var(--r-md);
+      background: transparent;
+      transition: all var(--dur-fast);
+      margin-top: 4px;
+    }
+    .show-more-btn:hover {
+      background: var(--color-surface-alt);
+      border-color: var(--color-primary-light);
+      color: var(--color-primary);
+    }
+    .show-more-btn svg {
+      width: 14px; height: 14px;
+      transition: transform var(--dur-normal) var(--ease-out);
+    }
+    .show-more-btn.expanded svg { transform: rotate(180deg); }
+
+    /* ─────────────────────────────────────────
+       9. CALENDAR
+       ───────────────────────────────────────── */
+
+    /* .calendar-container */
+    .calendar-container {
+      background: var(--color-surface);
+      border: 1.5px solid var(--color-border-light);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      margin-bottom: var(--sp-5);
+    }
+
+    /* .calendar-header — 月ナビゲーション */
+    .calendar-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--sp-4) var(--sp-5);
+      border-bottom: 1px solid var(--color-border-light);
+    }
+    .calendar-month-title { font-size: 16px; font-weight: 700; color: var(--color-text); }
+
+    /* .cal-nav-btn — 前月・翌月ボタン */
+    .cal-nav-btn {
+      width: 32px; height: 32px;
+      border-radius: var(--r-sm);
+      background: var(--color-surface-alt);
+      border: 1px solid var(--color-border);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--color-text-muted);
+      transition: all var(--dur-fast);
+    }
+    .cal-nav-btn:hover {
+      background: var(--color-primary-bg);
+      border-color: var(--color-primary-light);
+      color: var(--color-primary);
+    }
+    .cal-nav-btn svg { width: 16px; height: 16px; }
+
+    /* 曜日ヘッダー行 */
+    .calendar-weekdays {
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      padding: var(--sp-2) var(--sp-3);
+      border-bottom: 1px solid var(--color-border-light);
+    }
+    .cal-weekday {
+      text-align: center;
+      font-size: 11px; font-weight: 700;
+      color: var(--color-text-placeholder); padding: 4px 0;
+    }
+    .cal-weekday.sun { color: #ef4444; }
+    .cal-weekday.sat { color: #3b82f6; }
+
+    /* .calendar-grid — 7列グリッド */
+    .calendar-grid {
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      padding: var(--sp-2) var(--sp-3) var(--sp-3);
+    }
+
+    /* .cal-day — 日付セル */
+    .cal-day {
+      position: relative;
+      aspect-ratio: 1;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      border-radius: var(--r-sm);
+      font-size: 13px; font-weight: 500;
+      color: var(--color-text);
+      cursor: pointer;
+      transition:
+        background var(--dur-fast),
+        color var(--dur-fast),
+        transform var(--dur-fast) var(--ease-spring);
+    }
+    .cal-day.sunday { color: #ef4444; }
+    .cal-day.saturday { color: #3b82f6; }
+
+    /* .cal-day.has-slots — 空き枠がある日: 緑ドット */
+    .cal-day.has-slots::after {
+      content: '';
+      position: absolute; bottom: 3px; left: 50%;
+      transform: translateX(-50%);
+      width: 5px; height: 5px;
+      border-radius: var(--r-full);
+      background: var(--color-success);
+    }
+
+    /* ホバー */
+    .cal-day:not(.disabled):not(.selected):hover {
+      background: var(--color-primary-bg);
+      color: var(--color-primary);
+      transform: scale(1.06);
+    }
+
+    /* .cal-day.selected — 選択済み */
+    .cal-day.selected {
+      background: var(--color-primary);
+      color: #fff; font-weight: 700;
+      transform: scale(1.08);
+      box-shadow: var(--shadow-rose);
+    }
+    .cal-day.selected::after { background: rgba(255,255,255,.7); }
+
+    /* .cal-day.today — 今日 */
+    .cal-day.today:not(.selected) {
+      background: var(--color-primary-100);
+      color: var(--color-primary-dark);
+      font-weight: 700;
+    }
+
+    /* .cal-day.disabled — 非活性（過去・定休・満席） */
+    .cal-day.disabled {
+      color: var(--color-text-disabled);
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* .cal-day.empty — 空白セル */
+    .cal-day.empty { pointer-events: none; }
+
+    /* ─────────────────────────────────────────
+       10. TIME SLOTS (時間スロット)
+       ───────────────────────────────────────── */
+
+    .time-slots-section { margin-top: var(--sp-4); }
+
+    .time-slots-label {
+      font-size: 13px; font-weight: 700;
+      color: var(--color-text); margin-bottom: var(--sp-3);
+    }
+    .time-slots-date { color: var(--color-primary); }
+
+    /* .time-slots-grid */
+    .time-slots-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--sp-2);
+    }
+
+    /* .time-slot — 時間スロットボタン */
+    .time-slot {
+      padding: 10px var(--sp-2);
+      border: 1.5px solid var(--color-border);
+      border-radius: var(--r-md);
+      background: var(--color-surface);
+      font-size: 13px; font-weight: 600;
+      color: var(--color-text-muted);
+      text-align: center; cursor: pointer;
+      transition:
+        all var(--dur-fast) var(--ease-out),
+        transform var(--dur-fast) var(--ease-spring);
+    }
+    .time-slot:hover {
+      border-color: var(--color-primary-light);
+      background: var(--color-primary-bg);
+      color: var(--color-primary);
+    }
+    .time-slot:active { transform: scale(0.95); }
+
+    /* .time-slot.selected — 選択済み */
+    .time-slot.selected {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: #fff;
+      box-shadow: var(--shadow-rose);
+      transform: scale(1.04);
+    }
+
+    /* .time-slot.full — 満席 */
+    .time-slot.full {
+      background: var(--color-surface-alt);
+      border-color: var(--color-border);
+      color: var(--color-text-disabled);
+      text-decoration: line-through;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* 空きなし・日付未選択メッセージ */
+    .no-slots-msg {
+      text-align: center; padding: var(--sp-5);
+      color: var(--color-text-muted); font-size: 13px;
+      background: var(--color-surface-alt);
+      border-radius: var(--r-md);
+    }
+
+    /* ─────────────────────────────────────────
+       11. BOOKING SUMMARY CHIP
+       ───────────────────────────────────────── */
+
+    /* 選択内容チップ（ステップ2・3に表示） */
+    .booking-summary-chip {
+      display: flex; align-items: center; gap: var(--sp-2);
+      background: var(--color-primary-bg);
+      border: 1px solid var(--color-primary-100);
+      border-radius: var(--r-full);
+      padding: 6px 14px;
+      margin-bottom: var(--sp-5);
+      font-size: 11px;
+      color: var(--color-primary-dark);
+      font-weight: 600;
+      flex-wrap: wrap;
+    }
+    .booking-summary-chip svg { width: 14px; height: 14px; color: var(--color-primary); flex-shrink: 0; }
+    .chip-sep { color: var(--color-text-muted); }
+
+    /* ─────────────────────────────────────────
+       12. FORM (入力フォーム)
+       ───────────────────────────────────────── */
+
+    .form-group { margin-bottom: var(--sp-5); }
+
+    /* .form-label */
+    .form-label {
+      display: block;
+      font-size: 13px; font-weight: 700;
+      color: var(--color-text);
+      margin-bottom: var(--sp-2);
+    }
+    .form-label .required { color: var(--color-primary); margin-left: 3px; font-size: 12px; }
+    .form-label .optional  { color: var(--color-text-muted); font-size: 11px; font-weight: 400; margin-left: 4px; }
+
+    /* .booking-input — インプット共通スタイル */
+    .booking-input {
+      display: block; width: 100%;
+      padding: 13px var(--sp-4);
+      font-size: 15px; font-family: var(--font);
+      color: var(--color-text);
+      background: var(--color-surface);
+      border: 1.5px solid var(--color-border);
+      border-radius: var(--r-md);
+      outline: none;
+      transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+      -webkit-appearance: none; appearance: none;
+    }
+    .booking-input::placeholder { color: var(--color-text-disabled); }
+    .booking-input:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px var(--color-primary-100);
+    }
+    .booking-input.error {
+      border-color: var(--color-primary);
+      background: var(--color-primary-bg);
+    }
+    textarea.booking-input { resize: none; min-height: 90px; line-height: 1.6; }
+
+    /* .form-error */
+    .form-error {
+      display: none;
+      font-size: 11px; color: var(--color-primary);
+      margin-top: 4px; font-weight: 500;
+    }
+    .form-error.visible { display: block; }
+
+    /* 同意チェックボックスエリア */
+    .privacy-check-area {
+      display: flex; align-items: flex-start; gap: 10px;
+      margin-bottom: var(--sp-5);
+    }
+    .privacy-check-area input[type="checkbox"] {
+      width: 18px; height: 18px;
+      accent-color: var(--color-primary);
+      margin-top: 2px; flex-shrink: 0; cursor: pointer;
+    }
+    .privacy-check-area label {
+      font-size: 11px;
+      color: var(--color-text-muted);
+      line-height: 1.6; cursor: pointer;
+    }
+    .privacy-check-area a { color: var(--color-primary); text-decoration: underline; }
+
+    /* ─────────────────────────────────────────
+       13. BUTTONS
+       ───────────────────────────────────────── */
+
+    /* .booking-btn-primary — メインCTAボタン */
+    .booking-btn-primary {
+      display: flex; align-items: center; justify-content: center; gap: var(--sp-2);
+      width: 100%;
+      padding: 16px var(--sp-5);
+      font-size: 16px; font-weight: 700; font-family: var(--font);
+      color: #fff;
+      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+      border: none; border-radius: var(--r-md);
+      box-shadow: var(--shadow-rose);
+      cursor: pointer; position: relative; overflow: hidden;
+      transition:
+        transform var(--dur-fast) var(--ease-spring),
+        box-shadow var(--dur-fast),
+        opacity var(--dur-fast);
+    }
+    /* シマーエフェクト */
+    .booking-btn-primary::after {
+      content: '';
+      position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.15), transparent);
+      transition: left 0.6s var(--ease-out);
+    }
+    .booking-btn-primary:hover::after { left: 150%; }
+    .booking-btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(244,63,94,.35);
+    }
+    .booking-btn-primary:active { transform: scale(0.98); }
+    .booking-btn-primary:disabled,
+    .booking-btn-primary[disabled] {
+      opacity: 0.45; cursor: not-allowed;
+      transform: none; box-shadow: none; pointer-events: none;
+    }
+    .booking-btn-primary.loading { pointer-events: none; opacity: .8; }
+    .booking-btn-primary.loading .btn-spinner { display: inline-block; }
+    .booking-btn-primary.loading .btn-text,
+    .booking-btn-primary.loading svg:not(.btn-spinner) { opacity: 0; }
+    .booking-btn-primary svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+    /* スピナー */
+    .btn-spinner {
+      display: none; position: absolute;
+      width: 20px; height: 20px;
+      border: 2px solid rgba(255,255,255,.4);
+      border-top-color: #fff;
+      border-radius: var(--r-full);
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* .action-btn — 完了画面のアクションボタン */
+    .action-btn {
+      display: flex; align-items: center; justify-content: center; gap: var(--sp-3);
+      width: 100%;
+      padding: 15px var(--sp-5);
+      font-size: 15px; font-weight: 700; font-family: var(--font);
+      border-radius: var(--r-md); cursor: pointer;
+      transition: all var(--dur-fast) var(--ease-out);
+    }
+    .action-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+    /* LINEボタン */
+    .action-btn.line {
+      background: #06C755; color: #fff; border: none;
+      box-shadow: 0 4px 16px rgba(6,199,85,.3);
+    }
+    .action-btn.line:hover {
+      background: #05b04b;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(6,199,85,.4);
+    }
+
+    /* Googleカレンダーボタン */
+    .action-btn.google-cal {
+      background: var(--color-surface); color: var(--color-text);
+      border: 1.5px solid var(--color-border);
+    }
+    .action-btn.google-cal:hover {
+      background: var(--color-surface-alt);
+      border-color: var(--color-text-muted);
+    }
+
+    /* ─────────────────────────────────────────
+       14. STICKY FOOTER
+       ───────────────────────────────────────── */
+
+    /* .sticky-footer — CTAボタンを下固定するラッパー */
+    .sticky-footer {
+      position: fixed;
+      bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 100%; max-width: 480px;
+      background: var(--color-surface);
+      border-top: 1px solid var(--color-border-light);
+      padding: var(--sp-4) var(--sp-5);
+      padding-bottom: calc(var(--sp-4) + env(safe-area-inset-bottom, 0));
+      z-index: 50;
+    }
+
+    .caption {
+      font-size: 11px; color: var(--color-text-muted);
+      text-align: center; margin-top: 8px;
+    }
+
+    /* ─────────────────────────────────────────
+       15. SUCCESS CARD (完了画面)
+       ───────────────────────────────────────── */
+
+    /* .success-screen */
+    .success-screen {
+      display: flex; flex-direction: column; align-items: center;
+      padding: var(--sp-6) var(--sp-5) 60px;
+      min-height: 100vh;
+      background: linear-gradient(160deg, #fff 0%, #fff1f2 50%, #fff 100%);
+    }
+
+    /* .success-card */
+    .success-card {
+      width: 100%;
+      background: var(--color-surface);
+      border-radius: var(--r-xl);
+      box-shadow: var(--shadow-lg);
+      padding: var(--sp-6);
+      margin-top: 36px;
+      text-align: center;
+    }
+
+    /* .success-icon-wrap — チェックマーク円 */
+    .success-icon-wrap {
+      width: 72px; height: 72px;
+      border-radius: var(--r-full);
+      background: var(--color-success-bg);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto var(--sp-5);
+      animation: successPop var(--dur-slow) var(--ease-spring) both;
+      animation-delay: .1s;
+    }
+    .success-icon-wrap svg { width: 36px; height: 36px; color: var(--color-success); }
+
+    @keyframes successPop {
+      0%   { transform: scale(0) rotate(-20deg); opacity: 0; }
+      60%  { transform: scale(1.15) rotate(5deg); }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+
+    .success-title {
+      font-size: 20px; font-weight: 700; color: var(--color-text);
+      margin-bottom: 4px;
+      animation: fadeUp .4s var(--ease-out) both; animation-delay: .25s;
+    }
+    .success-subtitle {
+      font-size: 13px; color: var(--color-text-muted);
+      margin-bottom: var(--sp-5);
+      animation: fadeUp .4s var(--ease-out) both; animation-delay: .3s;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0);    }
+    }
+
+    /* .success-details — 予約詳細ブロック */
+    .success-details {
+      background: var(--color-bg);
+      border-radius: var(--r-md);
+      padding: var(--sp-4); text-align: left;
+      margin-bottom: var(--sp-5);
+      animation: fadeUp .4s var(--ease-out) both; animation-delay: .35s;
+    }
+    .success-detail-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--color-border-light);
+    }
+    .success-detail-row:last-child { border-bottom: none; }
+    .success-detail-label { font-size: 11px; color: var(--color-text-muted); font-weight: 500; }
+    .success-detail-value { font-size: 13px; color: var(--color-text); font-weight: 700; }
+
+    /* .success-actions */
+    .success-actions {
+      display: flex; flex-direction: column; gap: var(--sp-3);
+      animation: fadeUp .4s var(--ease-out) both; animation-delay: .45s;
+    }
+
+    /* ─────────────────────────────────────────
+       16. CONFETTI (紙吹雪)
+       ───────────────────────────────────────── */
+
+    .confetti-container {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 9999; overflow: hidden;
+    }
+    .confetti-piece {
+      position: absolute; top: -20px;
+      opacity: 0; border-radius: 2px;
+      animation: confettiFall linear both;
+    }
+    @keyframes confettiFall {
+      0%   { opacity: 1; transform: translateY(0) rotate(0deg); }
+      100% { opacity: 0; transform: translateY(110vh) rotate(720deg); }
+    }
+
+    /* ─────────────────────────────────────────
+       17. RESPONSIVE OVERRIDES
+       ───────────────────────────────────────── */
+
+    @media (min-width: 480px) {
+      .salon-cover { height: 240px; }
+      .time-slots-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+
+    @media (max-width: 360px) {
+      .salon-cover { height: 190px; }
+      .salon-name { font-size: 20px; }
+      .menu-grid { gap: var(--sp-2); }
+      .step-label { font-size: 9px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+      }
+    }
+
+    /* 凡例エリア */
+    .legend-row {
+      display: flex; align-items: center; gap: 16px;
+      margin-bottom: var(--sp-4);
+    }
+    .legend-item {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px; color: var(--color-text-muted);
+    }
+    .legend-dot {
+      width: 8px; height: 8px;
+      border-radius: var(--r-full);
+      display: inline-block;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<!-- ============================================================
+     BOOKING PAGE ROOT
+     .booking-page — max-width 480px, centered on desktop
+     ============================================================ -->
+<div class="booking-page" id="bookingPage">
+
+  <!-- ──────────────────────────────────────
+       SALON HEADER (全ステップ共通)
+       .salon-cover / .salon-hero-info
+       ─────────────────────────────────────── -->
+  <header>
+
+    <!-- サロンカバー画像エリア -->
+    <!-- 実際の運用: <img class="salon-cover-img" src="..." alt="サロン写真"> を内部に追加 -->
+    <div class="salon-cover" id="salonCover">
+
+      <!-- サロン情報オーバーレイ -->
+      <div class="salon-hero-info">
+        <h1 class="salon-name">
+          <span class="salon-icon" aria-hidden="true">🌸</span>Ginza Bloom
+        </h1>
+        <div class="salon-meta">
+          <!-- 評価バッジ -->
+          <div class="salon-rating" aria-label="評価 4.8点（236件）">
+            <span class="star" aria-hidden="true">★</span>
+            <span class="score">4.8</span>
+            <span class="count">(236)</span>
+          </div>
+          <!-- 住所 -->
+          <div class="salon-address">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            東京都中央区銀座
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.salon-cover -->
+
+    <!-- ─────────────────────────────────────
+         STEPPER (Step 1 > Step 2 > Step 3)
+         .stepper / .step-item / .step-dot
+         ───────────────────────────────────── -->
+    <nav class="stepper" id="stepper" aria-label="予約ステップ">
+
+      <!-- Step 1: メニュー -->
+      <div class="step-item active" id="stepInd1" aria-current="step">
+        <div class="step-dot" id="stepDot1" aria-hidden="true">1</div>
+        <span class="step-label">メニュー</span>
+      </div>
+
+      <!-- Step 2: 日時 -->
+      <div class="step-item" id="stepInd2">
+        <div class="step-dot" id="stepDot2" aria-hidden="true">2</div>
+        <span class="step-label">日時</span>
+      </div>
+
+      <!-- Step 3: お客様情報 -->
+      <div class="step-item" id="stepInd3">
+        <div class="step-dot" id="stepDot3" aria-hidden="true">3</div>
+        <span class="step-label">お客様情報</span>
+      </div>
+
+    </nav>
+
+  </header>
+  <!-- /SALON HEADER -->
+
+
+  <!-- ============================================================
+       STEP PANELS WRAPPER
+       ============================================================ -->
+  <main class="step-panels" id="stepPanels">
+
+
+    <!-- ============================================================
+         Step 1: サロン情報 + メニュー選択
+         ============================================================ -->
+    <section
+      class="step-panel active"
+      id="step1"
+      aria-label="ステップ1: メニューを選んでください"
+    >
+      <h2 class="section-heading">
+        メニューを選んでください
+        <small>施術メニューをひとつお選びください</small>
+      </h2>
+
+      <!-- メニューカードグリッド (2列) -->
+      <div class="menu-grid" role="list" aria-label="施術メニュー一覧">
+
+        <!-- メニューカード: カット -->
+        <button
+          class="menu-card"
+          role="listitem"
+          data-menu-id="cut"
+          data-menu-name="カット"
+          data-menu-price="5500"
+          data-menu-duration="60"
+          onclick="selectMenu(this)"
+          aria-pressed="false"
+          aria-label="カット 5,500円 60分"
+        >
+          <div class="menu-card-check" aria-hidden="true">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <div class="menu-name">カット</div>
+          <div class="menu-price">¥5,500</div>
+          <div class="menu-duration">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            60分
+          </div>
+        </button>
+
+        <!-- メニューカード: カラー + カット -->
+        <button
+          class="menu-card"
+          role="listitem"
+          data-menu-id="color-cut"
+          data-menu-name="カラー+カット"
+          data-menu-price="14000"
+          data-menu-duration="120"
+          onclick="selectMenu(this)"
+          aria-pressed="false"
+          aria-label="カラー+カット 14,000円 120分"
+        >
+          <div class="menu-card-check" aria-hidden="true">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <div class="menu-name">カラー+カット</div>
+          <div class="menu-price">¥14,000</div>
+          <div class="menu-duration">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            120分
+          </div>
+        </button>
+
+        <!-- メニューカード: ヘアセット -->
+        <button
+          class="menu-card"
+          role="listitem"
+          data-menu-id="set"
+          data-menu-name="ヘアセット"
+          data-menu-price="6000"
+          data-menu-duration="45"
+          onclick="selectMenu(this)"
+          aria-pressed="false"
+          aria-label="ヘアセット 6,000円 45分"
+        >
+          <div class="menu-card-check" aria-hidden="true">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <div class="menu-name">ヘアセット</div>
+          <div class="menu-price">¥6,000</div>
+          <div class="menu-duration">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            45分
+          </div>
+        </button>
+
+        <!-- メニューカード: トリートメント -->
+        <button
+          class="menu-card"
+          role="listitem"
+          data-menu-id="treatment"
+          data-menu-name="トリートメント"
+          data-menu-price="4500"
+          data-menu-duration="30"
+          onclick="selectMenu(this)"
+          aria-pressed="false"
+          aria-label="トリートメント 4,500円 30分"
+        >
+          <div class="menu-card-check" aria-hidden="true">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <div class="menu-name">トリートメント</div>
+          <div class="menu-price">¥4,500</div>
+          <div class="menu-duration">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            30分
+          </div>
+        </button>
+
+      </div><!-- /.menu-grid (初期4件) -->
+
+      <!-- もっと見るボタン -->
+      <button
+        class="show-more-btn"
+        id="showMoreBtn"
+        onclick="toggleMoreMenus()"
+        aria-expanded="false"
+        aria-controls="moreMenus"
+      >
+        <span>もっと見る</span>
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+      </button>
+
+      <!-- 追加メニュー (デフォルト非表示) -->
+      <div
+        class="menu-grid"
+        id="moreMenus"
+        style="display:none; margin-top: var(--sp-3);"
+        aria-hidden="true"
+        role="list"
+      >
+        <!-- パーマ -->
+        <button
+          class="menu-card"
+          role="listitem"
+          data-menu-id="perm"
+          data-menu-name="パーマ"
+          data-menu-price="16000"
+          data-menu-duration="150"
+          onclick="selectMenu(this)"
+          aria-pressed="false"
+          aria-label="パーマ 16,000円 150分"
+        >
+          <div class="menu-card-check" aria-hidden="true">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <div class="menu-name">パーマ</div>
+          <div class="menu-price">¥16,000</div>
+          <div class="menu-duration">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            150分
+          </div>
+        </button>
+
+        <!-- 縮毛矯正 -->
+        <button
+          class="menu-card"
+          role="listitem"
+          data-menu-id="straight"
+          data-menu-name="縮毛矯正"
+          data-menu-price="22000"
+          data-menu-duration="180"
+          onclick="selectMenu(this)"
+          aria-pressed="false"
+          aria-label="縮毛矯正 22,000円 180分"
+        >
+          <div class="menu-card-check" aria-hidden="true">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <div class="menu-name">縮毛矯正</div>
+          <div class="menu-price">¥22,000</div>
+          <div class="menu-duration">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            180分
+          </div>
+        </button>
+      </div><!-- /#moreMenus -->
+
+      <!-- フッターCTA: 日時を選ぶ -->
+      <div class="sticky-footer">
+        <button
+          class="booking-btn-primary"
+          id="step1NextBtn"
+          onclick="goToStep(2)"
+          disabled
+          aria-disabled="true"
+        >
+          <span class="btn-text">日時を選ぶ</span>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+          <span class="btn-spinner" aria-hidden="true"></span>
+        </button>
+        <p class="caption">メニューを選ぶと次のステップに進めます</p>
+      </div>
+
+    </section>
+    <!-- /Step 1 -->
+
+
+    <!-- ============================================================
+         Step 2: 日時選択
+         ============================================================ -->
+    <section
+      class="step-panel"
+      id="step2"
+      aria-label="ステップ2: 日時を選んでください"
+    >
+
+      <!-- 戻るボタン付きヘッダー -->
+      <div class="step-nav-header">
+        <button class="back-btn" onclick="goToStep(1)" aria-label="メニュー選択に戻る">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+          戻る
+        </button>
+        <h2 class="section-heading" style="margin-bottom:0;">日時を選んでください</h2>
+      </div>
+
+      <!-- 選択中メニューのチップ (Step 2) -->
+      <div class="booking-summary-chip" id="chipStep2">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        <span id="chipMenuName">カット（60分）</span>
+      </div>
+
+      <!-- カレンダー -->
+      <div class="calendar-container" role="application" aria-label="予約日カレンダー">
+
+        <!-- .calendar-header — 月ナビゲーション -->
+        <div class="calendar-header">
+          <button class="cal-nav-btn" id="calPrevBtn" onclick="changeCalMonth(-1)" aria-label="前の月">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+          </button>
+
+          <div class="calendar-month-title" id="calTitle" aria-live="polite">2026年2月</div>
+
+          <button class="cal-nav-btn" id="calNextBtn" onclick="changeCalMonth(1)" aria-label="次の月">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- 曜日ラベル行 -->
+        <div class="calendar-weekdays" aria-hidden="true">
+          <div class="cal-weekday sun">日</div>
+          <div class="cal-weekday">月</div>
+          <div class="cal-weekday">火</div>
+          <div class="cal-weekday">水</div>
+          <div class="cal-weekday">木</div>
+          <div class="cal-weekday">金</div>
+          <div class="cal-weekday sat">土</div>
+        </div>
+
+        <!-- .calendar-grid — 7列グリッド (JS生成) -->
+        <div
+          class="calendar-grid"
+          id="calendarGrid"
+          role="grid"
+          aria-label="日付を選択してください"
+        >
+          <!-- .cal-day セルはJSで動的生成 -->
+          <!-- 空き: .has-slots  選択: .selected  非活性: .disabled -->
+        </div>
+
+      </div><!-- /.calendar-container -->
+
+      <!-- 凡例 -->
+      <div class="legend-row">
+        <div class="legend-item">
+          <span class="legend-dot" style="background:var(--color-success);" aria-hidden="true"></span>
+          空きあり
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot" style="background:var(--color-text-disabled);" aria-hidden="true"></span>
+          満席 / 定休
+        </div>
+      </div>
+
+      <!-- 時間スロットセクション (日付選択後に表示) -->
+      <div class="time-slots-section" id="timeSlotsSection" aria-live="polite">
+
+        <!-- 日付未選択のプレースホルダー -->
+        <p class="no-slots-msg" id="noDateMsg">
+          カレンダーから日付を選んでください
+        </p>
+
+        <!-- 時間スロットグリッド (日付選択後に表示) -->
+        <div id="timeSlotWrap" style="display:none;">
+          <div class="time-slots-label">
+            <span id="selectedDateLbl" class="time-slots-date"></span>の空き時間
+          </div>
+          <!-- .time-slots-grid — スロットボタン群 -->
+          <div
+            class="time-slots-grid"
+            id="timeSlotsGrid"
+            role="list"
+            aria-label="空き時間一覧"
+          >
+            <!-- .time-slot / .time-slot.selected / .time-slot.full は JS生成 -->
+          </div>
+        </div>
+
+      </div><!-- /.time-slots-section -->
+
+      <!-- フッターCTA: 次へ -->
+      <div class="sticky-footer">
+        <button
+          class="booking-btn-primary"
+          id="step2NextBtn"
+          onclick="goToStep(3)"
+          disabled
+          aria-disabled="true"
+        >
+          <span class="btn-text">お客様情報を入力する</span>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+          <span class="btn-spinner" aria-hidden="true"></span>
+        </button>
+      </div>
+
+    </section>
+    <!-- /Step 2 -->
+
+
+    <!-- ============================================================
+         Step 3: 顧客情報入力
+         ============================================================ -->
+    <section
+      class="step-panel"
+      id="step3"
+      aria-label="ステップ3: お客様情報を入力してください"
+    >
+
+      <!-- 戻るボタン付きヘッダー -->
+      <div class="step-nav-header">
+        <button class="back-btn" onclick="goToStep(2)" aria-label="日時選択に戻る">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+          戻る
+        </button>
+        <h2 class="section-heading" style="margin-bottom:0;">お客様情報</h2>
+      </div>
+
+      <!-- 選択内容サマリーチップ (Step 3) -->
+      <div class="booking-summary-chip" id="chipStep3">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        <span id="chipDateTime">2026年2月15日(火) 11:00</span>
+        <span class="chip-sep">|</span>
+        <span id="chipMenu3">カット</span>
+      </div>
+
+      <!-- 入力フォーム -->
+      <form id="bookingForm" novalidate onsubmit="return false;">
+
+        <!-- お名前 -->
+        <div class="form-group">
+          <label class="form-label" for="inputName">
+            お名前
+            <span class="required" aria-label="必須">*</span>
+          </label>
+          <!-- .booking-input — インプット共通スタイル -->
+          <input
+            type="text"
+            id="inputName"
+            class="booking-input"
+            placeholder="田中 さくら"
+            autocomplete="name"
+            inputmode="text"
+            aria-required="true"
+            aria-describedby="nameError"
+          />
+          <span class="form-error" id="nameError" role="alert">お名前を入力してください</span>
+        </div>
+
+        <!-- 電話番号 -->
+        <div class="form-group">
+          <label class="form-label" for="inputPhone">
+            電話番号
+            <span class="required" aria-label="必須">*</span>
+          </label>
+          <input
+            type="tel"
+            id="inputPhone"
+            class="booking-input"
+            placeholder="090-xxxx-xxxx"
+            autocomplete="tel"
+            inputmode="tel"
+            aria-required="true"
+            aria-describedby="phoneError"
+          />
+          <span class="form-error" id="phoneError" role="alert">正しい電話番号を入力してください</span>
+        </div>
+
+        <!-- メモ（任意） -->
+        <div class="form-group">
+          <label class="form-label" for="inputNote">
+            ご要望・メモ
+            <span class="optional">（任意）</span>
+          </label>
+          <textarea
+            id="inputNote"
+            class="booking-input"
+            placeholder="ご要望があればご記入ください（例：前回と同じスタイルで、カラーは明るめに）"
+          ></textarea>
+        </div>
+
+        <!-- プライバシーポリシー同意 -->
+        <div class="privacy-check-area">
+          <input type="checkbox" id="privacyCheck" aria-required="true" />
+          <label for="privacyCheck">
+            <a href="#" onclick="return false;">プライバシーポリシー</a>
+            および
+            <a href="#" onclick="return false;">利用規約</a>
+            に同意して予約を確定します
+          </label>
+        </div>
+
+      </form>
+
+      <!-- フッターCTA: 予約を確定する -->
+      <div class="sticky-footer">
+        <!-- .booking-btn-primary — 予約確定ボタン (ローディング状態対応) -->
+        <button
+          class="booking-btn-primary"
+          id="confirmBtn"
+          onclick="submitBooking()"
+          aria-label="予約を確定する"
+        >
+          <span class="btn-text">予約を確定する</span>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+          <span class="btn-spinner" aria-hidden="true"></span>
+        </button>
+        <p class="caption">送信後、SMS・メールで確認をお送りします</p>
+      </div>
+
+    </section>
+    <!-- /Step 3 -->
+
+
+    <!-- ============================================================
+         Step 4: 予約完了画面
+         ============================================================ -->
+    <section
+      class="step-panel"
+      id="step4"
+      aria-label="ステップ4: 予約完了"
+      aria-live="polite"
+    >
+
+      <!-- .success-screen — 完了画面のラッパー -->
+      <div class="success-screen">
+
+        <!-- .success-card — メイン完了カード -->
+        <div class="success-card" role="region" aria-label="予約完了の詳細">
+
+          <!-- .success-icon-wrap — チェックアイコン (successPop アニメーション) -->
+          <div class="success-icon-wrap" aria-hidden="true">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+
+          <!-- 完了メッセージ -->
+          <h2 class="success-title">予約が完了しました！</h2>
+          <p class="success-subtitle">ご予約ありがとうございます。当日お会いできるのを楽しみにしております。</p>
+
+          <!-- .success-details — 予約詳細ブロック -->
+          <div class="success-details">
+
+            <div class="success-detail-row">
+              <span class="success-detail-label">サロン</span>
+              <span class="success-detail-value">Ginza Bloom</span>
+            </div>
+
+            <div class="success-detail-row">
+              <span class="success-detail-label">日時</span>
+              <span class="success-detail-value" id="confirmDatetime">2026年2月15日(火) 11:00</span>
+            </div>
+
+            <div class="success-detail-row">
+              <span class="success-detail-label">メニュー</span>
+              <span class="success-detail-value" id="confirmMenu">カット</span>
+            </div>
+
+            <div class="success-detail-row">
+              <span class="success-detail-label">料金</span>
+              <span class="success-detail-value" id="confirmPrice" style="color:var(--color-primary);">¥5,500</span>
+            </div>
+
+            <div class="success-detail-row">
+              <span class="success-detail-label">お客様</span>
+              <span class="success-detail-value" id="confirmName">-</span>
+            </div>
+
+          </div><!-- /.success-details -->
+
+          <!-- .success-actions — アクションボタン群 -->
+          <div class="success-actions">
+
+            <!-- .action-btn.line — LINEで詳細を受け取る -->
+            <button class="action-btn line" onclick="handleLineShare()" aria-label="LINEで予約詳細を受け取る">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/>
+              </svg>
+              LINEで詳細を受け取る
+            </button>
+
+            <!-- .action-btn.google-cal — Googleカレンダーに追加 -->
+            <button class="action-btn google-cal" onclick="handleGoogleCalendar()" aria-label="Googleカレンダーに予約を追加">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <rect x="3" y="4" width="18" height="18" rx="2" stroke-width="1.5"/>
+                <path d="M3 9h18" stroke-width="1.5"/>
+                <path d="M8 4V3M16 4V3" stroke-linecap="round" stroke-width="1.5"/>
+                <path d="M8 14l2 2 4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" stroke="#10b981"/>
+              </svg>
+              Googleカレンダーに追加
+            </button>
+
+          </div><!-- /.success-actions -->
+
+        </div><!-- /.success-card -->
+
+        <!-- フッター注記 -->
+        <p class="caption" style="margin-top:20px; font-size:11px;">
+          Powered by <strong style="color:var(--color-text);">SalonOS</strong>
+          &nbsp;·&nbsp; ご不明点はサロンへお問い合わせください
+        </p>
+
+      </div><!-- /.success-screen -->
+
+    </section>
+    <!-- /Step 4 -->
+
+
+  </main>
+  <!-- /STEP PANELS -->
+
+</div>
+<!-- /BOOKING PAGE -->
+
+
+<!-- ============================================================
+     CONFETTI CONTAINER (完了時の紙吹雪エフェクト)
+     .confetti-container / .confetti-piece
+     ============================================================ -->
+<div class="confetti-container" id="confettiContainer" aria-hidden="true"></div>
+
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+/* ====================================================
+   STATE — 予約フロー全体の状態管理
+   ==================================================== */
+const State = {
+  step:         1,
+  selectedMenu: null,   // { id, name, price, duration }
+  selectedDate: null,   // Date オブジェクト
+  selectedTime: null,   // "11:00" 形式
+  calYear:      0,
+  calMonth:     0,
+  customerName: '',
+  customerPhone:'',
+  customerNote: '',
+};
+
+/* ====================================================
+   MOCK DATA — 空き状況（実際にはAPIで取得）
+   ==================================================== */
+const AVAIL = {
+  '2026-02-19': ['10:00', '11:00', '14:00', '16:00'],
+  '2026-02-20': ['9:00', '10:00', '11:00', '13:00', '15:30', '16:00', '17:00'],
+  '2026-02-21': ['11:00', '14:00'],
+  '2026-02-22': [],
+  '2026-02-24': ['9:00', '10:00', '13:00', '15:00', '16:00', '17:00'],
+  '2026-02-25': ['11:00', '14:00', '16:00'],
+  '2026-02-26': ['10:00', '13:00', '15:00'],
+  '2026-02-27': ['10:00', '11:00', '14:00'],
+  '2026-02-28': ['11:00', '14:00', '16:00'],
+  '2026-03-03': ['10:00', '11:00', '13:00'],
+  '2026-03-04': ['9:00', '11:00', '14:00', '16:00'],
+  '2026-03-05': ['10:00', '13:00', '15:30'],
+  '2026-03-06': ['11:00', '14:00', '16:00', '17:00'],
+  '2026-03-07': ['10:00', '11:00', '13:00'],
+  '2026-03-10': ['10:00', '14:00'],
+  '2026-03-11': ['11:00', '13:00', '15:00'],
+  '2026-03-12': ['9:00', '10:00', '16:00'],
+  '2026-03-13': ['11:00', '14:00'],
+  '2026-03-14': ['10:00', '13:00', '15:30', '17:00'],
+};
+const CLOSED_DOW = [0]; // 0=日曜定休
+
+/* ====================================================
+   NAVIGATION — ステップ間移動
+   ==================================================== */
+
+/**
+ * 指定ステップへ移動する
+ * スライドアニメーション（前進: slide-fwd / 後退: slide-bwd）を適用
+ */
+function goToStep(target) {
+  const prev = State.step;
+
+  // バリデーション
+  if (target === 2 && !State.selectedMenu) return;
+  if (target === 3 && (!State.selectedDate || !State.selectedTime)) return;
+
+  // パネル切り替え
+  document.querySelectorAll('.step-panel').forEach(p => {
+    p.classList.remove('active', 'slide-fwd', 'slide-bwd');
+  });
+
+  const panel = document.getElementById('step' + target);
+  const dir = target > prev ? 'slide-fwd' : 'slide-bwd';
+  panel.classList.add('active', dir);
+
+  // ステッパー更新
+  updateStepper(target);
+
+  // サマリーチップ更新
+  syncChips();
+
+  // Step 2 初期化
+  if (target === 2) initCalendar();
+
+  // スクロールトップ
+  document.getElementById('bookingPage').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  State.step = target;
+}
+
+/**
+ * ステッパーのUI状態を更新する
+ */
+function updateStepper(active) {
+  for (let i = 1; i <= 3; i++) {
+    const ind = document.getElementById('stepInd' + i);
+    const dot = document.getElementById('stepDot' + i);
+    ind.classList.remove('active', 'completed');
+    ind.removeAttribute('aria-current');
+
+    if (i < active) {
+      ind.classList.add('completed');
+      dot.innerHTML = '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:12px;height:12px;" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>';
+    } else if (i === active) {
+      ind.classList.add('active');
+      ind.setAttribute('aria-current', 'step');
+      dot.textContent = i;
+    } else {
+      dot.textContent = i;
+    }
+  }
+}
+
+/**
+ * サマリーチップのテキストを同期する
+ */
+function syncChips() {
+  const m = State.selectedMenu;
+  const d = State.selectedDate;
+  const t = State.selectedTime;
+
+  if (m) {
+    const mText = m.name + '（' + m.duration + '分）';
+    const el2 = document.getElementById('chipMenuName');
+    if (el2) el2.textContent = mText;
+    const el3 = document.getElementById('chipMenu3');
+    if (el3) el3.textContent = m.name;
+  }
+  if (d && t) {
+    const el = document.getElementById('chipDateTime');
+    if (el) el.textContent = fmtDateJP(d) + ' ' + t;
+  }
+}
+
+/* ====================================================
+   STEP 1 — MENU SELECTION
+   メニューカードの選択 / もっと見るのトグル
+   ==================================================== */
+
+/**
+ * メニューカードを選択する
+ * .menu-card.selected クラスを付与し、チェックマークアニメーションを発火
+ */
+function selectMenu(cardEl) {
+  document.querySelectorAll('.menu-card').forEach(c => {
+    c.classList.remove('selected');
+    c.setAttribute('aria-pressed', 'false');
+  });
+
+  cardEl.classList.add('selected');
+  cardEl.setAttribute('aria-pressed', 'true');
+
+  State.selectedMenu = {
+    id:       cardEl.dataset.menuId,
+    name:     cardEl.dataset.menuName,
+    price:    parseInt(cardEl.dataset.menuPrice)    || 0,
+    duration: parseInt(cardEl.dataset.menuDuration) || 60,
+  };
+
+  // 次へボタン活性化
+  const btn = document.getElementById('step1NextBtn');
+  btn.disabled = false;
+  btn.setAttribute('aria-disabled', 'false');
+}
+
+/**
+ * もっと見る / 閉じる のトグル
+ */
+function toggleMoreMenus() {
+  const more = document.getElementById('moreMenus');
+  const btn  = document.getElementById('showMoreBtn');
+  const open = btn.getAttribute('aria-expanded') === 'true';
+
+  if (open) {
+    more.style.display = 'none';
+    more.setAttribute('aria-hidden', 'true');
+    btn.setAttribute('aria-expanded', 'false');
+    btn.querySelector('span').textContent = 'もっと見る';
+    btn.classList.remove('expanded');
+  } else {
+    more.style.display = 'grid';
+    more.setAttribute('aria-hidden', 'false');
+    btn.setAttribute('aria-expanded', 'true');
+    btn.querySelector('span').textContent = '閉じる';
+    btn.classList.add('expanded');
+  }
+}
+
+/* ====================================================
+   STEP 2 — CALENDAR
+   .calendar-grid / .cal-day の生成・月移動・日付選択
+   ==================================================== */
+
+/**
+ * カレンダーを初期化する（現在月で表示）
+ */
+function initCalendar() {
+  const now = new Date();
+  if (State.calYear === 0) {
+    State.calYear  = now.getFullYear();
+    State.calMonth = now.getMonth();
+  }
+  renderCal(State.calYear, State.calMonth);
+}
+
+/**
+ * 月を前後に移動する
+ */
+function changeCalMonth(delta) {
+  let m = State.calMonth + delta;
+  let y = State.calYear;
+  if (m > 11) { m = 0; y++; }
+  if (m < 0)  { m = 11; y--; }
+
+  const today = new Date();
+  const limit = new Date(today.getFullYear(), today.getMonth(), 1);
+  if (new Date(y, m, 1) < limit) return;
+
+  State.calYear  = y;
+  State.calMonth = m;
+  renderCal(y, m);
+}
+
+/**
+ * カレンダーグリッドを描画する
+ * .cal-day を生成し、空き状況に応じて .has-slots / .disabled を付与
+ */
+function renderCal(year, month) {
+  document.getElementById('calTitle').textContent = year + '年' + (month + 1) + '月';
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const first = new Date(year, month, 1);
+  const last  = new Date(year, month + 1, 0);
+  const startDow = first.getDay();
+  const days = last.getDate();
+
+  let html = '';
+
+  // 月初め前の空白
+  for (let i = 0; i < startDow; i++) {
+    html += '<div class="cal-day empty" aria-hidden="true"></div>';
+  }
+
+  // 日付セル生成
+  for (let d = 1; d <= days; d++) {
+    const date    = new Date(year, month, d);
+    const dStr    = toDateStr(date);
+    const dow     = date.getDay();
+    const isPast  = date < today;
+    const isClosed = CLOSED_DOW.includes(dow);
+    const slots   = AVAIL[dStr];
+    const hasSlots = slots && slots.length > 0;
+    const isToday  = date.getTime() === today.getTime();
+    const isSel    = State.selectedDate && date.getTime() === State.selectedDate.getTime();
+    const isDisabled = isPast || isClosed || !hasSlots;
+
+    let cls = 'cal-day';
+    if (dow === 0) cls += ' sunday';
+    if (dow === 6) cls += ' saturday';
+    if (isToday)   cls += ' today';
+    if (isSel)     cls += ' selected';
+    else if (hasSlots && !isDisabled) cls += ' has-slots';
+    if (isDisabled) cls += ' disabled';
+
+    const label = (month + 1) + '月' + d + '日' + (isDisabled ? '（予約不可）' : hasSlots ? '（空きあり）' : '');
+    const clickAttr = isDisabled ? '' : 'onclick="selectCalDay(' + year + ',' + month + ',' + d + ')"';
+
+    html += '<div class="' + cls + '" role="gridcell" aria-label="' + label + '"'
+          + (isSel ? ' aria-selected="true"' : '')
+          + ' tabindex="' + (isDisabled ? -1 : 0) + '"'
+          + ' onkeydown="if(event.key===\'Enter\'||event.key===\' \')selectCalDay(' + year + ',' + month + ',' + d + ')"'
+          + clickAttr + '>' + d + '</div>';
+  }
+
+  document.getElementById('calendarGrid').innerHTML = html;
+
+  // 前月ボタンの活性/非活性
+  const prevBtn = document.getElementById('calPrevBtn');
+  const nowFirst = new Date(today.getFullYear(), today.getMonth(), 1);
+  const curFirst = new Date(year, month, 1);
+  prevBtn.disabled = curFirst <= nowFirst;
+  prevBtn.style.opacity = curFirst <= nowFirst ? '0.4' : '1';
+}
+
+/**
+ * 日付を選択する
+ */
+function selectCalDay(year, month, day) {
+  const date = new Date(year, month, day);
+  State.selectedDate = date;
+  State.selectedTime = null;
+
+  renderCal(year, month);
+  renderSlots(date);
+
+  const btn = document.getElementById('step2NextBtn');
+  btn.disabled = true;
+  btn.setAttribute('aria-disabled', 'true');
+}
+
+/**
+ * 時間スロットを描画する
+ * .time-slot / .time-slot.selected / .time-slot.full を生成
+ */
+function renderSlots(date) {
+  const dStr = toDateStr(date);
+  const slots = AVAIL[dStr] || [];
+
+  document.getElementById('noDateMsg').style.display   = 'none';
+  document.getElementById('timeSlotWrap').style.display = 'block';
+  document.getElementById('selectedDateLbl').textContent = fmtDateJP(date);
+
+  const grid = document.getElementById('timeSlotsGrid');
+
+  if (slots.length === 0) {
+    grid.innerHTML = '<div class="no-slots-msg" style="grid-column:1/-1;">この日は満席です</div>';
+    return;
+  }
+
+  grid.innerHTML = slots.map(t => {
+    const isSel = State.selectedTime === t;
+    return '<button class="time-slot' + (isSel ? ' selected' : '') + '"'
+         + ' role="listitem" aria-pressed="' + isSel + '"'
+         + ' aria-label="' + t + 'を選択"'
+         + ' onclick="selectSlot(\'' + t + '\', this)">' + t + '</button>';
+  }).join('');
+}
+
+/**
+ * 時間スロットを選択する
+ */
+function selectSlot(time, btn) {
+  document.querySelectorAll('.time-slot').forEach(s => {
+    s.classList.remove('selected');
+    s.setAttribute('aria-pressed', 'false');
+  });
+
+  btn.classList.add('selected');
+  btn.setAttribute('aria-pressed', 'true');
+  State.selectedTime = time;
+
+  const nextBtn = document.getElementById('step2NextBtn');
+  nextBtn.disabled = false;
+  nextBtn.setAttribute('aria-disabled', 'false');
+}
+
+/* ====================================================
+   STEP 3 — FORM & VALIDATION
+   .booking-input のバリデーション / 送信処理
+   ==================================================== */
+
+/**
+ * フォームをバリデーションして予約を送信する
+ * エラー: .booking-input.error + .form-error.visible
+ * 成功: ローディング後に完了画面へ
+ */
+function submitBooking() {
+  const nameEl    = document.getElementById('inputName');
+  const phoneEl   = document.getElementById('inputPhone');
+  const privacyEl = document.getElementById('privacyCheck');
+  let valid = true;
+
+  // 名前
+  if (!nameEl.value.trim()) {
+    showErr('inputName', 'nameError'); valid = false;
+  } else {
+    clearErr('inputName', 'nameError');
+  }
+
+  // 電話番号（数字10〜11桁）
+  const raw = phoneEl.value.replace(/-/g, '');
+  if (!raw || !/^\d{10,11}$/.test(raw)) {
+    showErr('inputPhone', 'phoneError'); valid = false;
+  } else {
+    clearErr('inputPhone', 'phoneError');
+  }
+
+  // プライバシー同意
+  if (!privacyEl.checked) {
+    privacyEl.style.outline = '2px solid var(--color-primary)';
+    privacyEl.style.outlineOffset = '2px';
+    valid = false;
+  } else {
+    privacyEl.style.outline = '';
+  }
+
+  if (!valid) return;
+
+  State.customerName  = nameEl.value.trim();
+  State.customerPhone = phoneEl.value.trim();
+  State.customerNote  = document.getElementById('inputNote').value.trim();
+
+  // ローディング演出 → 完了画面へ
+  const btn = document.getElementById('confirmBtn');
+  btn.classList.add('loading');
+
+  setTimeout(() => {
+    btn.classList.remove('loading');
+    showSuccess();
+  }, 1800);
+}
+
+function showErr(inputId, errId) {
+  document.getElementById(inputId).classList.add('error');
+  document.getElementById(errId).classList.add('visible');
+}
+function clearErr(inputId, errId) {
+  document.getElementById(inputId).classList.remove('error');
+  document.getElementById(errId).classList.remove('visible');
+}
+
+/* ====================================================
+   STEP 4 — SUCCESS SCREEN + CONFETTI
+   完了画面の表示と紙吹雪エフェクト
+   ==================================================== */
+
+/**
+ * 完了画面を表示する
+ */
+function showSuccess() {
+  const m = State.selectedMenu;
+  const d = State.selectedDate;
+  const t = State.selectedTime;
+
+  document.getElementById('confirmDatetime').textContent = fmtDateJP(d) + ' ' + t;
+  document.getElementById('confirmMenu').textContent     = m ? m.name : '';
+  document.getElementById('confirmPrice').textContent    = m ? '¥' + m.price.toLocaleString('ja-JP') : '';
+  document.getElementById('confirmName').textContent     = State.customerName;
+
+  // パネル切り替え
+  document.querySelectorAll('.step-panel').forEach(p =>
+    p.classList.remove('active', 'slide-fwd', 'slide-bwd')
+  );
+  document.getElementById('step4').classList.add('active', 'slide-fwd');
+
+  // ステッパーを非表示（完了後は不要）
+  document.getElementById('stepper').style.display = 'none';
+
+  State.step = 4;
+
+  // 紙吹雪発火
+  launchConfetti();
+}
+
+/**
+ * 紙吹雪エフェクト
+ * .confetti-piece を動的生成して confettiFall アニメーションで落下させる
+ */
+function launchConfetti() {
+  const container = document.getElementById('confettiContainer');
+  const colors = [
+    '#f43f5e','#fda4af','#d4af37','#f0d97a',
+    '#10b981','#6366f1','#8b5cf6','#f97316',
+  ];
+
+  for (let i = 0; i < 80; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    const color    = colors[Math.floor(Math.random() * colors.length)];
+    const left     = Math.random() * 100;
+    const delay    = Math.random() * 2.5;
+    const duration = 2.5 + Math.random() * 2;
+    const size     = 6 + Math.random() * 8;
+    const round    = Math.random() > 0.5 ? '50%' : '2px';
+    el.style.cssText =
+      'left:' + left + '%;background:' + color +
+      ';width:' + size + 'px;height:' + size + 'px' +
+      ';border-radius:' + round +
+      ';animation-duration:' + duration + 's' +
+      ';animation-delay:' + delay + 's;';
+    container.appendChild(el);
+  }
+
+  // クリーンアップ
+  setTimeout(() => { container.innerHTML = ''; }, 5500);
+}
+
+/* ====================================================
+   ACTION BUTTONS
+   ==================================================== */
+
+function handleLineShare() {
+  const m = State.selectedMenu;
+  const d = State.selectedDate;
+  const t = State.selectedTime;
+  const text = encodeURIComponent(
+    '【予約完了】Ginza Bloom\n' + fmtDateJP(d) + ' ' + t + '\n' +
+    m.name + ' ¥' + m.price.toLocaleString('ja-JP')
+  );
+  window.open('https://social-plugins.line.me/lineit/share?url=' +
+    encodeURIComponent(location.href) + '&text=' + text, '_blank');
+}
+
+function handleGoogleCalendar() {
+  const m = State.selectedMenu;
+  const d = State.selectedDate;
+  const t = State.selectedTime;
+  if (!d || !t) return;
+
+  const [hh, mm] = t.split(':').map(Number);
+  const start = new Date(d); start.setHours(hh, mm, 0, 0);
+  const end   = new Date(start); end.setMinutes(end.getMinutes() + (m ? m.duration : 60));
+  const fmt = v => v.toISOString().replace(/[-:]/g,'').split('.')[0] + 'Z';
+
+  const p = new URLSearchParams({
+    action:   'TEMPLATE',
+    text:     'Ginza Bloom - ' + (m ? m.name : '予約'),
+    dates:    fmt(start) + '/' + fmt(end),
+    details:  'SalonOS予約 / ' + (m ? m.name : '') + ' ¥' + (m ? m.price.toLocaleString('ja-JP') : ''),
+    location: '東京都中央区銀座',
+  });
+  window.open('https://calendar.google.com/calendar/render?' + p.toString(), '_blank');
+}
+
+/* ====================================================
+   UTILITIES
+   ==================================================== */
+
+/** Date → "YYYY-MM-DD" */
+function toDateStr(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return y + '-' + m + '-' + day;
+}
+
+/** Date → "2026年2月15日(火)" */
+function fmtDateJP(d) {
+  const DOW = ['日','月','火','水','木','金','土'];
+  return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日(' + DOW[d.getDay()] + ')';
+}
+
+/* ====================================================
+   INIT
+   ==================================================== */
+document.addEventListener('DOMContentLoaded', () => {
+  const now = new Date();
+  State.calYear  = now.getFullYear();
+  State.calMonth = now.getMonth();
+
+  // 電話番号: 自動ハイフン
+  document.getElementById('inputPhone').addEventListener('input', function() {
+    let v = this.value.replace(/\D/g, '');
+    if (v.length > 3 && v.length <= 7)  v = v.slice(0,3) + '-' + v.slice(3);
+    else if (v.length > 7)              v = v.slice(0,3) + '-' + v.slice(3,7) + '-' + v.slice(7,11);
+    this.value = v;
+    if (v.replace(/-/g,'').length >= 10) clearErr('inputPhone','phoneError');
+  });
+
+  // 名前: リアルタイムクリア
+  document.getElementById('inputName').addEventListener('input', function() {
+    if (this.value.trim()) clearErr('inputName','nameError');
+  });
+
+  // プライバシーチェック
+  document.getElementById('privacyCheck').addEventListener('change', function() {
+    if (this.checked) this.style.outline = '';
+  });
+});
+</script>
+</body>
+</html>

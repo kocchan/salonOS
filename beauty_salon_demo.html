@@ -1,0 +1,2228 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SalonOS - 美容室管理システム</title>
+<style>
+  /* ===== RESET & BASE ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --primary: #7C5CBF;
+    --primary-light: #9B7DD4;
+    --primary-pale: #F0EBFF;
+    --accent: #E8A598;
+    --accent-light: #FDECEA;
+    --success: #4CAF8A;
+    --success-light: #E8F5EF;
+    --warning: #F0A500;
+    --warning-light: #FFF8E7;
+    --danger: #E05252;
+    --danger-light: #FDEAEA;
+    --text-primary: #1A1A2E;
+    --text-secondary: #6B7280;
+    --text-muted: #9CA3AF;
+    --border: #E5E7EB;
+    --bg: #F8F7FC;
+    --white: #FFFFFF;
+    --sidebar-w: 220px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
+    --shadow-md: 0 4px 12px rgba(0,0,0,.1);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,.14);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-lg: 16px;
+  }
+  body {
+    font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    display: flex;
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ===== SIDEBAR ===== */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--white);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+    box-shadow: 2px 0 8px rgba(124,92,191,.06);
+  }
+  .sidebar-logo {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .logo-text { font-weight: 700; font-size: 16px; color: var(--primary); }
+  .logo-sub { font-size: 10px; color: var(--text-muted); }
+  .sidebar-nav { padding: 12px 0; flex: 1; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 0;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    transition: all .15s;
+    border-left: 3px solid transparent;
+    text-decoration: none;
+  }
+  .nav-item:hover { background: var(--primary-pale); color: var(--primary); }
+  .nav-item.active {
+    background: var(--primary-pale);
+    color: var(--primary);
+    border-left-color: var(--primary);
+    font-weight: 600;
+  }
+  .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+  .sidebar-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+  }
+  .staff-badge {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px;
+    background: var(--primary-pale);
+    border-radius: var(--radius-sm);
+  }
+  .staff-avatar {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 12px;
+  }
+  .staff-name { font-size: 12px; font-weight: 600; color: var(--primary); }
+  .staff-role { font-size: 10px; color: var(--text-muted); }
+
+  /* ===== MAIN CONTENT ===== */
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  .topbar {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top: 0; z-index: 90;
+    box-shadow: var(--shadow-sm);
+  }
+  .topbar-title { font-size: 17px; font-weight: 700; }
+  .topbar-actions { display: flex; align-items: center; gap: 12px; }
+  .topbar-date { font-size: 12px; color: var(--text-muted); }
+
+  .content { padding: 24px 28px; flex: 1; }
+
+  /* Screen visibility */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ===== BUTTONS ===== */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all .15s;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+  }
+  .btn-primary:hover { background: var(--primary-light); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(124,92,191,.3); }
+  .btn-secondary {
+    background: var(--white);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { background: var(--bg); }
+  .btn-success { background: var(--success); color: white; }
+  .btn-success:hover { background: #3D9A74; }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .btn-line {
+    background: #00C300;
+    color: white;
+  }
+  .btn-line:hover { background: #00A800; }
+
+  /* ===== CARDS ===== */
+  .card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+  }
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .card-title {
+    font-size: 14px; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* ===== KPI CARDS ===== */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .kpi-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .kpi-card.purple::before { background: var(--primary); }
+  .kpi-card.green::before { background: var(--success); }
+  .kpi-card.orange::before { background: var(--warning); }
+  .kpi-card.pink::before { background: var(--accent); }
+  .kpi-label { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+  .kpi-value { font-size: 28px; font-weight: 800; color: var(--text-primary); line-height: 1; }
+  .kpi-unit { font-size: 13px; font-weight: 500; margin-left: 2px; }
+  .kpi-change {
+    margin-top: 8px;
+    font-size: 11px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .kpi-change.up { color: var(--success); }
+  .kpi-change.down { color: var(--danger); }
+  .kpi-icon {
+    position: absolute;
+    top: 16px; right: 16px;
+    font-size: 24px;
+    opacity: .15;
+  }
+
+  /* ===== SECTION HEADERS ===== */
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .section-title {
+    font-size: 14px; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px; font-weight: 700;
+  }
+  .badge-danger { background: var(--danger-light); color: var(--danger); }
+  .badge-warning { background: var(--warning-light); color: var(--warning); }
+  .badge-success { background: var(--success-light); color: var(--success); }
+  .badge-primary { background: var(--primary-pale); color: var(--primary); }
+  .badge-muted { background: var(--bg); color: var(--text-muted); }
+
+  /* ===== DASHBOARD LAYOUT ===== */
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .dashboard-grid .full-width { grid-column: 1 / -1; }
+
+  /* Today's appointments list */
+  .appt-list { display: flex; flex-direction: column; gap: 8px; }
+  .appt-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--white);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .appt-item:hover { border-color: var(--primary-light); background: var(--primary-pale); }
+  .appt-time {
+    font-size: 12px; font-weight: 700;
+    color: var(--primary);
+    min-width: 50px;
+    text-align: center;
+  }
+  .appt-bar {
+    width: 3px; height: 36px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .bar-confirmed { background: var(--success); }
+  .bar-tentative { background: var(--warning); }
+  .bar-cancelled { background: var(--text-muted); }
+  .appt-info { flex: 1; }
+  .appt-name { font-size: 13px; font-weight: 600; }
+  .appt-menu { font-size: 11px; color: var(--text-muted); }
+  .appt-price {
+    font-size: 13px; font-weight: 700;
+    color: var(--text-secondary);
+  }
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-confirmed { background: var(--success); }
+  .dot-tentative { background: var(--warning); }
+  .dot-cancelled { background: var(--text-muted); }
+
+  /* Alert list */
+  .alert-list { display: flex; flex-direction: column; gap: 8px; }
+  .alert-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    background: var(--danger-light);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--danger);
+  }
+  .alert-item .name { font-size: 13px; font-weight: 600; flex: 1; }
+  .alert-item .days { font-size: 11px; color: var(--danger); font-weight: 600; }
+
+  /* Recent karte */
+  .karte-mini-list { display: flex; flex-direction: column; gap: 8px; }
+  .karte-mini {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .karte-mini:hover { border-color: var(--primary); background: var(--primary-pale); }
+  .avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 13px;
+    flex-shrink: 0;
+    color: white;
+  }
+  .karte-mini .info { flex: 1; }
+  .karte-mini .info .name { font-size: 13px; font-weight: 600; }
+  .karte-mini .info .sub { font-size: 11px; color: var(--text-muted); }
+  .karte-mini .meta { text-align: right; }
+  .karte-mini .meta .date { font-size: 11px; color: var(--text-muted); }
+
+  /* ===== APPOINTMENTS CALENDAR ===== */
+  .calendar-nav {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px;
+  }
+  .calendar-nav h2 { font-size: 16px; font-weight: 700; flex: 1; }
+  .week-grid {
+    display: grid;
+    grid-template-columns: 60px repeat(7, 1fr);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--white);
+    box-shadow: var(--shadow-sm);
+  }
+  .week-header {
+    display: contents;
+  }
+  .week-header-cell {
+    padding: 10px 6px;
+    text-align: center;
+    background: var(--primary-pale);
+    border-bottom: 2px solid var(--primary);
+    font-size: 12px; font-weight: 700;
+  }
+  .week-header-cell .dow { color: var(--text-muted); font-weight: 500; font-size: 10px; }
+  .week-header-cell .dom { font-size: 16px; color: var(--primary); }
+  .week-header-cell.today .dom {
+    background: var(--primary);
+    color: white;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto;
+  }
+  .time-col-header {
+    background: var(--primary-pale);
+    border-bottom: 2px solid var(--primary);
+    border-right: 1px solid var(--border);
+  }
+  .time-slot-row {
+    display: contents;
+  }
+  .time-label {
+    padding: 0 8px;
+    text-align: right;
+    font-size: 10px; color: var(--text-muted);
+    border-right: 1px solid var(--border);
+    height: 48px;
+    display: flex; align-items: flex-start;
+    padding-top: 4px;
+  }
+  .time-cell {
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid #F3F4F6;
+    height: 48px;
+    position: relative;
+    cursor: pointer;
+  }
+  .time-cell:hover { background: #FAFAFA; }
+  .time-cell:last-child { border-right: none; }
+  .cal-event {
+    position: absolute;
+    left: 2px; right: 2px;
+    border-radius: 5px;
+    padding: 3px 5px;
+    font-size: 10px;
+    cursor: pointer;
+    overflow: hidden;
+    z-index: 10;
+    line-height: 1.3;
+    box-shadow: 0 1px 3px rgba(0,0,0,.15);
+    transition: all .15s;
+  }
+  .cal-event:hover { z-index: 20; transform: scale(1.02); box-shadow: var(--shadow-md); }
+  .cal-event.confirmed { background: var(--success-light); border-left: 3px solid var(--success); color: #2D7A5A; }
+  .cal-event.tentative { background: var(--warning-light); border-left: 3px solid var(--warning); color: #8A5E00; }
+  .cal-event.cancelled { background: #F3F4F6; border-left: 3px solid var(--text-muted); color: var(--text-muted); text-decoration: line-through; }
+  .cal-event .ev-name { font-weight: 700; }
+  .cal-event .ev-menu { font-size: 9px; }
+
+  /* ===== CUSTOMER GRID ===== */
+  .search-bar {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 20px;
+  }
+  .search-input {
+    flex: 1;
+    padding: 10px 14px 10px 38px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    background: var(--white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") no-repeat 12px center;
+    font-family: inherit;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(124,92,191,.1); }
+  .customer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .customer-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 18px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all .2s;
+    position: relative;
+  }
+  .customer-card:hover {
+    border-color: var(--primary-light);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+  .customer-card-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 12px;
+  }
+  .customer-card .name { font-size: 15px; font-weight: 700; }
+  .customer-card .furigana { font-size: 10px; color: var(--text-muted); }
+  .customer-card .last-visit { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+  .customer-card .visit-count {
+    font-size: 11px; color: var(--text-muted);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .service-icons {
+    display: flex; gap: 4px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .service-tag {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: var(--primary-pale);
+    color: var(--primary);
+    font-weight: 600;
+  }
+  .overdue-badge {
+    position: absolute;
+    top: 12px; right: 12px;
+    background: var(--danger);
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 20px;
+  }
+  .line-badge {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 20px;
+    background: #E8F8E8;
+    color: #00A800;
+    font-weight: 700;
+  }
+
+  /* ===== CUSTOMER DETAIL ===== */
+  .detail-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 20px;
+  }
+  .profile-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    height: fit-content;
+  }
+  .profile-avatar-lg {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 26px;
+    color: white;
+    margin: 0 auto 16px;
+  }
+  .profile-name { text-align: center; font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+  .profile-furigana { text-align: center; font-size: 11px; color: var(--text-muted); margin-bottom: 16px; }
+  .profile-actions { display: flex; gap: 8px; margin-bottom: 20px; }
+  .profile-actions .btn { flex: 1; justify-content: center; }
+  .profile-info-table { width: 100%; border-collapse: collapse; }
+  .profile-info-table tr { border-bottom: 1px solid var(--border); }
+  .profile-info-table tr:last-child { border-bottom: none; }
+  .profile-info-table th {
+    font-size: 11px; color: var(--text-muted); font-weight: 600;
+    text-align: left; padding: 9px 0;
+    width: 80px;
+  }
+  .profile-info-table td { font-size: 13px; padding: 9px 0; font-weight: 500; }
+  .next-visit-box {
+    margin-top: 16px;
+    padding: 12px;
+    background: var(--primary-pale);
+    border-radius: var(--radius-sm);
+    border: 1px dashed var(--primary-light);
+    text-align: center;
+  }
+  .next-visit-box .label { font-size: 10px; color: var(--primary); font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
+  .next-visit-box .date { font-size: 16px; font-weight: 800; color: var(--primary); }
+  .next-visit-box .sub { font-size: 10px; color: var(--text-muted); }
+
+  /* Timeline */
+  .timeline { position: relative; padding-left: 20px; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 7px; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--border);
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -16px; top: 16px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--primary);
+    border: 2px solid white;
+    box-shadow: 0 0 0 2px var(--primary);
+  }
+  .timeline-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow-sm);
+  }
+  .tl-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .tl-date { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+  .tl-price { font-size: 15px; font-weight: 800; color: var(--primary); }
+  .tl-menu { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+  .tl-formula {
+    font-size: 12px; color: var(--text-secondary);
+    background: var(--bg);
+    padding: 8px 10px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    font-family: monospace;
+    line-height: 1.6;
+  }
+  .tl-footer {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px; color: var(--text-muted);
+  }
+
+  /* ===== LINE SENDER ===== */
+  .line-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .line-customer-list { display: flex; flex-direction: column; gap: 8px; }
+  .line-customer-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px;
+    background: var(--white);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .line-customer-item:hover { border-color: #00C300; background: #F0FBF0; }
+  .line-customer-item.selected { border-color: #00C300; background: #E8F8E8; }
+  .line-customer-item .info { flex: 1; }
+  .line-customer-item .name { font-size: 13px; font-weight: 700; }
+  .line-customer-item .sub { font-size: 11px; color: var(--text-muted); }
+  .line-preview-box {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+  }
+  .line-phone-mock {
+    background: #1A1A2E;
+    border-radius: 20px;
+    padding: 16px;
+    max-width: 320px;
+    margin: 0 auto;
+  }
+  .line-phone-header {
+    text-align: center;
+    color: white;
+    font-size: 11px;
+    margin-bottom: 12px;
+    opacity: .6;
+  }
+  .line-chat-bubble {
+    background: white;
+    border-radius: 0 12px 12px 12px;
+    padding: 12px 14px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-primary);
+    box-shadow: 0 2px 6px rgba(0,0,0,.2);
+    max-width: 90%;
+  }
+  .line-sender-name {
+    color: #00C300;
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .send-btn-wrap { margin-top: 16px; text-align: center; }
+  .send-btn-wrap .btn { padding: 12px 32px; font-size: 15px; width: 100%; justify-content: center; }
+
+  /* Send animation */
+  .send-success {
+    display: none;
+    flex-direction: column; align-items: center;
+    gap: 8px;
+    padding: 20px;
+    text-align: center;
+  }
+  .send-success.show { display: flex; }
+  .send-success .checkmark { font-size: 48px; animation: pop .3s ease; }
+  @keyframes pop {
+    0% { transform: scale(0); }
+    80% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+  }
+  .send-success .msg { font-size: 14px; font-weight: 700; color: var(--success); }
+
+  /* History table */
+  .history-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+  .history-table th {
+    font-size: 11px; color: var(--text-muted);
+    text-align: left; padding: 8px 12px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+  }
+  .history-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+  .history-table tr:last-child td { border-bottom: none; }
+  .history-table tr:hover td { background: var(--bg); }
+  .status-pill {
+    display: inline-flex; align-items: center;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 10px; font-weight: 700;
+  }
+  .pill-delivered { background: var(--success-light); color: var(--success); }
+  .pill-failed { background: var(--danger-light); color: var(--danger); }
+  .pill-pending { background: var(--warning-light); color: var(--warning); }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.45);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    width: 480px;
+    max-width: 95vw;
+    box-shadow: var(--shadow-lg);
+    animation: slideUp .2s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .modal-title { font-size: 16px; font-weight: 800; }
+  .modal-close {
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 18px;
+    background: none; border: none;
+    transition: background .15s;
+  }
+  .modal-close:hover { background: var(--bg); color: var(--text-primary); }
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; display: block; }
+  .form-control {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color .15s;
+    background: var(--white);
+  }
+  .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(124,92,191,.1); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+
+  /* ===== SCROLLBAR ===== */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+  }
+  .empty-state .icon { font-size: 36px; margin-bottom: 10px; }
+  .empty-state p { font-size: 13px; }
+
+  /* ===== TOOLTIP ===== */
+  .tooltip-wrap { position: relative; display: inline-block; }
+  .tooltip-wrap:hover .tooltip { opacity: 1; }
+  .tooltip {
+    opacity: 0;
+    position: absolute;
+    bottom: calc(100% + 5px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text-primary);
+    color: white;
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 5px;
+    white-space: nowrap;
+    pointer-events: none;
+    transition: opacity .15s;
+    z-index: 999;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 1100px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .detail-layout { grid-template-columns: 1fr; }
+    .line-layout { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">✂</div>
+    <div>
+      <div class="logo-text">SalonOS</div>
+      <div class="logo-sub">美容室管理システム</div>
+    </div>
+  </div>
+  <div class="sidebar-nav">
+    <a class="nav-item active" onclick="navigate('dashboard')" data-screen="dashboard">
+      <span class="nav-icon">📊</span> ダッシュボード
+    </a>
+    <a class="nav-item" onclick="navigate('appointments')" data-screen="appointments">
+      <span class="nav-icon">📅</span> 予約管理
+    </a>
+    <a class="nav-item" onclick="navigate('customers')" data-screen="customers">
+      <span class="nav-icon">👥</span> 顧客カルテ
+    </a>
+    <a class="nav-item" onclick="navigate('line-send')" data-screen="line-send">
+      <span class="nav-icon">💬</span> LINE送信
+    </a>
+  </div>
+  <div class="sidebar-footer">
+    <div class="staff-badge">
+      <div class="staff-avatar">山</div>
+      <div>
+        <div class="staff-name">山田 美穂</div>
+        <div class="staff-role">オーナースタイリスト</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">ダッシュボード</div>
+    <div class="topbar-actions">
+      <span class="topbar-date" id="topbar-date"></span>
+      <button class="btn btn-primary btn-sm" onclick="openModal()">＋ 新規予約</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ===== SCREEN 1: DASHBOARD ===== -->
+    <div class="screen active" id="screen-dashboard">
+      <!-- KPI Cards -->
+      <div class="kpi-grid" id="kpi-grid"></div>
+
+      <div class="dashboard-grid">
+        <!-- Today's Appointments -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📋 本日の予約 <span id="today-count" class="badge badge-primary">0件</span></div>
+            <button class="btn btn-secondary btn-sm" onclick="navigate('appointments')">全て見る</button>
+          </div>
+          <div class="appt-list" id="today-appt-list"></div>
+        </div>
+
+        <!-- Alert -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">⚠️ 3ヶ月以上未来店 <span id="alert-count" class="badge badge-danger">0名</span></div>
+            <button class="btn btn-secondary btn-sm" onclick="navigate('line-send')">LINE送信</button>
+          </div>
+          <div class="alert-list" id="alert-list"></div>
+        </div>
+
+        <!-- Recent Karte -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🗂 最近追加したカルテ</div>
+            <button class="btn btn-secondary btn-sm" onclick="navigate('customers')">全て見る</button>
+          </div>
+          <div class="karte-mini-list" id="recent-karte-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SCREEN 2: APPOINTMENTS ===== -->
+    <div class="screen" id="screen-appointments">
+      <div class="calendar-nav">
+        <button class="btn btn-secondary btn-sm" onclick="prevWeek()">◀ 前週</button>
+        <h2 id="week-label"></h2>
+        <button class="btn btn-secondary btn-sm" onclick="nextWeek()">次週 ▶</button>
+        <button class="btn btn-primary" onclick="openModal()">＋ 新規予約追加</button>
+      </div>
+      <!-- Legend -->
+      <div style="display:flex;gap:16px;margin-bottom:12px;font-size:12px;">
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:50%;background:var(--success);display:inline-block;"></span>確定</span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:50%;background:var(--warning);display:inline-block;"></span>仮押さえ</span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:50%;background:var(--text-muted);display:inline-block;"></span>キャンセル</span>
+      </div>
+      <div class="week-grid" id="week-grid"></div>
+    </div>
+
+    <!-- ===== SCREEN 3: CUSTOMERS ===== -->
+    <div class="screen" id="screen-customers">
+      <div class="search-bar">
+        <input type="text" class="search-input" id="customer-search" placeholder="名前・施術内容で検索..." oninput="filterCustomers(this.value)">
+        <button class="btn btn-secondary">絞り込み ▾</button>
+        <span style="font-size:12px;color:var(--text-muted);" id="customer-count"></span>
+      </div>
+      <div class="customer-grid" id="customer-grid"></div>
+    </div>
+
+    <!-- ===== SCREEN 4: CUSTOMER DETAIL ===== -->
+    <div class="screen" id="screen-customer-detail">
+      <button class="btn btn-secondary btn-sm" onclick="navigate('customers')" style="margin-bottom:16px;">← カルテ一覧へ</button>
+      <div class="detail-layout" id="detail-layout"></div>
+    </div>
+
+    <!-- ===== SCREEN 5: LINE SEND ===== -->
+    <div class="screen" id="screen-line-send">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <div>
+          <div style="font-size:16px;font-weight:700;">LINE一斉送信</div>
+          <div style="font-size:12px;color:var(--text-muted);">3ヶ月以上来店のない顧客に来店促進メッセージを送信します</div>
+        </div>
+        <button class="btn btn-line" onclick="sendAll()">🟢 全員に送信</button>
+      </div>
+      <div class="line-layout">
+        <div>
+          <div class="section-title" style="margin-bottom:12px;">📋 送信対象顧客 <span id="line-target-count" class="badge badge-danger">0名</span></div>
+          <div class="line-customer-list" id="line-customer-list"></div>
+        </div>
+        <div>
+          <div class="section-title" style="margin-bottom:12px;">👁 メッセージプレビュー</div>
+          <div class="line-preview-box" id="line-preview-box">
+            <div class="empty-state">
+              <div class="icon">💬</div>
+              <p>左のリストから顧客を選択してください</p>
+            </div>
+          </div>
+          <div style="margin-top:24px;">
+            <div class="section-title" style="margin-bottom:12px;">📨 送信履歴</div>
+            <div class="card" style="padding:0;overflow:hidden;">
+              <table class="history-table" id="history-table"></table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+
+<!-- MODAL: 新規予約 -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">📅 新規予約追加</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">顧客名</label>
+        <select class="form-control" id="modal-customer">
+          <option value="">顧客を選択...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">担当スタイリスト</label>
+        <select class="form-control">
+          <option>山田</option>
+          <option>鈴木</option>
+          <option>佐藤</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">日付</label>
+        <input type="date" class="form-control" id="modal-date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">ステータス</label>
+        <select class="form-control">
+          <option value="confirmed">確定</option>
+          <option value="tentative">仮押さえ</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">開始時間</label>
+        <input type="time" class="form-control" value="10:00">
+      </div>
+      <div class="form-group">
+        <label class="form-label">終了時間</label>
+        <input type="time" class="form-control" value="11:30">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">施術メニュー</label>
+      <input type="text" class="form-control" placeholder="例: カット + カラー">
+    </div>
+    <div class="form-group">
+      <label class="form-label">料金（円）</label>
+      <input type="number" class="form-control" placeholder="10000">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal()">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveAppointment()">予約を追加</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// =============================================================================
+// DUMMY DATA
+// =============================================================================
+const DUMMY_DATA = {
+  customers: [
+    {
+      id: 1,
+      name: "田中 奈美",
+      furigana: "たなか なみ",
+      phone: "090-3421-1234",
+      email: "tanaka.nami@example.com",
+      birthdate: "1986-03-15",
+      allergies: "なし",
+      notes: "猫っ毛・細め。前髪は短めが好み。頭皮が敏感なのでアルカリを抑えたカラー推奨",
+      createdAt: "2023-04-10",
+      lineConnected: true,
+      avatarColor: "#7C5CBF",
+      visits: [
+        {
+          id: 1,
+          date: "2025-11-08",
+          menu: "カット + カラー（フルカラー）",
+          colorFormula: "【ROOT】LEBEL マテリア N-8 / オキシ6% 1:2 / 放置30分\n【MID-END】MILBON オルディーブ 8-SA + クリア 1:1 / オキシ3% / 放置25分",
+          staff: "山田",
+          price: 14500,
+          notes: "根元2cm リタッチ後、毛先はグロスカラーでツヤ出し"
+        },
+        {
+          id: 2,
+          date: "2025-08-22",
+          menu: "カット + カラー（リタッチ）+ トリートメント",
+          colorFormula: "【ROOT】LEBEL マテリア N-8 / オキシ6% 1:2 / 放置30分\n【TREATMENT】KERASTASE レジスタンス マスク",
+          staff: "山田",
+          price: 16800,
+          notes: "トリートメント追加。ダメージが出てきたため毛先カットも2cm"
+        },
+        {
+          id: 3,
+          date: "2025-05-15",
+          menu: "カット + ヘアセット（結婚式お呼ばれ）",
+          colorFormula: "（カラーなし）",
+          staff: "鈴木",
+          price: 8500,
+          notes: "アップスタイル希望。パール系ピンで留め仕上げ"
+        },
+        {
+          id: 4,
+          date: "2025-02-10",
+          menu: "カット + カラー（フルカラー）",
+          colorFormula: "MILBON オルディーブ 7-SA + 7-P / オキシ6% 1:2 / 放置30分\n仕上がりトーン: 7.5 アッシュパープル",
+          staff: "山田",
+          price: 13200,
+          notes: "初めてパープル系を試す。本人希望で少し赤み残し"
+        }
+      ]
+    },
+    {
+      id: 2,
+      name: "佐藤 恵里",
+      furigana: "さとう えり",
+      phone: "080-7654-2345",
+      email: "sato.eri@example.com",
+      birthdate: "1991-07-28",
+      allergies: "ジアミン系アレルギー疑い（要パッチテスト）",
+      notes: "ハイライト好き。明るい仕上がりを好む。ブリーチは頭皮付け根1cm空けて施術",
+      createdAt: "2022-09-05",
+      lineConnected: true,
+      avatarColor: "#E8A598",
+      visits: [
+        {
+          id: 1,
+          date: "2025-10-03",
+          menu: "ブリーチ + ハイライト + トーニング",
+          colorFormula: "【ブリーチ】FIBRE BOOSTED BLEACH パウダー / オキシ6% 1:2 / アルミ巻き25枚 / 放置35分\n【TONER】WELLA コレストン 10/38 + 10/0 / オキシ1.9% / 放置20分",
+          staff: "山田",
+          price: 24000,
+          notes: "15レベルまで脱色。トーンダウン有。既存ハイライトと馴染むよう調整"
+        },
+        {
+          id: 2,
+          date: "2025-06-18",
+          menu: "カット + ハイライト（補修）",
+          colorFormula: "【TONER補修】WELLA コレストン 9/38 / オキシ1.9% / 放置15分",
+          staff: "山田",
+          price: 18500,
+          notes: "退色が進みオレンジ味が出てきたためトーナーのみ補修"
+        },
+        {
+          id: 3,
+          date: "2025-02-22",
+          menu: "ブリーチ + ハイライト（新規）",
+          colorFormula: "【ブリーチ】FIBRE BOOSTED BLEACH / オキシ6% / 放置30分（アルミ20枚）\n【TONER】WELLA 10/38 / オキシ1.9% / 放置20分",
+          staff: "山田",
+          price: 22000,
+          notes: "初ハイライト。面長のため顔周りに集中してライティング"
+        }
+      ]
+    },
+    {
+      id: 3,
+      name: "山本 麻子",
+      furigana: "やまもと あさこ",
+      phone: "090-1122-3456",
+      email: "yamamoto.asako@example.com",
+      birthdate: "1979-11-03",
+      allergies: "なし",
+      notes: "パーマ歴10年以上。ロッドは常に14mm以上で柔らかいウェーブを好む。ストレートは好まない",
+      createdAt: "2021-06-20",
+      lineConnected: false,
+      avatarColor: "#4CAF8A",
+      visits: [
+        {
+          id: 1,
+          date: "2026-01-15",
+          menu: "デジタルパーマ + カット",
+          colorFormula: "【パーマ液】SHISEIDO プリュネル クリームウェーブ1液（軟化剤）/ 放置15分\n温度 130℃ / ロッド16mm（全体）/ 2液オキシ3% 放置10分",
+          staff: "山田",
+          price: 19000,
+          notes: "前回より1サイズ大きいロッドで緩めウェーブに変更。本人大満足"
+        },
+        {
+          id: 2,
+          date: "2025-09-10",
+          menu: "デジタルパーマ + カット + カラー（グレイカバー）",
+          colorFormula: "【パーマ】先にパーマ施術\n【カラー】LEBEL マテリア G-6 + G-8 / オキシ3% / 放置25分（白髪30%）",
+          staff: "山田",
+          price: 23500,
+          notes: "白髪カバー希望。グレイカラーで自然なグラデーション"
+        },
+        {
+          id: 3,
+          date: "2025-04-20",
+          menu: "カット + カラー（グレイカバー）",
+          colorFormula: "LEBEL マテリア G-5 / オキシ6% / 放置35分（白髪35%）",
+          staff: "鈴木",
+          price: 11000,
+          notes: "パーマをお休みしてカラーのみ。次回はパーマ予定"
+        },
+        {
+          id: 4,
+          date: "2024-11-08",
+          menu: "デジタルパーマ + カット",
+          colorFormula: "【パーマ液】プリュネル 1液 / 放置15分 / 温度 130℃ / ロッド14mm",
+          staff: "山田",
+          price: 17500,
+          notes: "毛量多めのため内側セクションのカットを重点的に"
+        }
+      ]
+    },
+    {
+      id: 4,
+      name: "鈴木 友美",
+      furigana: "すずき ともみ",
+      phone: "070-9876-4567",
+      email: "suzuki.tomomi@example.com",
+      birthdate: "1998-04-22",
+      allergies: "なし",
+      notes: "Z世代。インスタで見た韓国風スタイルが好み。ケアブリーチ対応可。次回Wカラー希望",
+      createdAt: "2024-01-18",
+      lineConnected: true,
+      avatarColor: "#F0A500",
+      visits: [
+        {
+          id: 1,
+          date: "2025-12-05",
+          menu: "ケアブリーチ + インナーカラー（ピンクベージュ）",
+          colorFormula: "【ブリーチ】FIBRE BOOSTED BLEACH + OLAPLEX No.1 / オキシ6% / 放置25分\n【インナー】MILBON オルディーブ アディクシー Amethyst + ピンク / オキシ1.9% / 放置20分\n仕上がり: 内側17レベル・外側9レベル",
+          staff: "山田",
+          price: 28000,
+          notes: "耳上10cmがインナーゾーン。顔まわり産毛は際から0.5cm残す"
+        },
+        {
+          id: 2,
+          date: "2025-08-14",
+          menu: "ケアブリーチ + ハイライト + カット",
+          colorFormula: "【ブリーチ】FIBRE BOOSTED BLEACH / オキシ6% / スライス15枚\n【TONER】MILBON アディクシー スモーキートパーズ / オキシ1.9% / 放置15分",
+          staff: "山田",
+          price: 26500,
+          notes: "韓国ハニービーカラー参考。ナチュラルハイライトで抜け感を演出"
+        },
+        {
+          id: 3,
+          date: "2025-04-08",
+          menu: "カラー（初来店・全体）",
+          colorFormula: "MILBON アディクシー スモーキートパーズ 9 / オキシ6% 1:2 / 放置25分",
+          staff: "山田",
+          price: 11500,
+          notes: "初来店。全体的にアッシュ系希望。ブリーチなしで9トーン達成"
+        }
+      ]
+    },
+    {
+      id: 5,
+      name: "高橋 千恵子",
+      furigana: "たかはし ちえこ",
+      phone: "090-2233-5678",
+      email: "takahashi.chieko@example.com",
+      birthdate: "1962-09-30",
+      allergies: "なし",
+      notes: "60代。白髪が目立ちやすいためリタッチは6〜7週で推奨。ブローのみ仕上げを好む",
+      createdAt: "2020-03-15",
+      lineConnected: false,
+      avatarColor: "#9B7DD4",
+      visits: [
+        {
+          id: 1,
+          date: "2025-10-20",
+          menu: "カット + グレイカラー（全体）",
+          colorFormula: "LEBEL マテリア G-4 + OBe-4 (7:3) / オキシ6% 1:2 / 放置35分\n白髪: 全体約50% / 仕上がり: ナチュラルブラウン",
+          staff: "山田",
+          price: 13500,
+          notes: "白髪比率が増加傾向。明るいG4で自然なグレイブレンドに"
+        },
+        {
+          id: 2,
+          date: "2025-08-05",
+          menu: "カット + グレイカラー（リタッチ）",
+          colorFormula: "LEBEL マテリア G-4 / オキシ6% 1:2 / 放置35分（根元2cm）",
+          staff: "山田",
+          price: 11000,
+          notes: "リタッチのみ。白髪3〜4cm伸びている"
+        },
+        {
+          id: 3,
+          date: "2025-06-10",
+          menu: "カット + グレイカラー（全体）",
+          colorFormula: "LEBEL マテリア G-4 + G-6 (5:5) / オキシ3% / 放置35分",
+          staff: "山田",
+          price: 13500,
+          notes: "明るめに仕上げたい希望。オキシ3%で刺激軽減"
+        },
+        {
+          id: 4,
+          date: "2025-03-28",
+          menu: "カット + グレイカラー（リタッチ）",
+          colorFormula: "LEBEL マテリア G-4 / オキシ6% 1:2 / 放置35分（根元2.5cm）",
+          staff: "鈴木",
+          price: 11000,
+          notes: "前回から8週経過。白髪目立ちやすいため次回は6週後推奨"
+        },
+        {
+          id: 5,
+          date: "2025-01-15",
+          menu: "カット + グレイカラー（全体）+ トリートメント",
+          colorFormula: "LEBEL マテリア G-4 + OBe-4 / オキシ6% / 放置35分\n【TREATMENT】LEBEL IAU エッセンス",
+          staff: "山田",
+          price: 15200,
+          notes: "年始めでフルリフレッシュ。毛先のパサつきが気になるとのこと"
+        }
+      ]
+    },
+    {
+      id: 6,
+      name: "伊藤 美咲",
+      furigana: "いとう みさき",
+      phone: "080-5544-6789",
+      email: "ito.misaki@example.com",
+      birthdate: "1995-01-14",
+      allergies: "なし",
+      notes: "肩上ボブが定着スタイル。カラーはレッド系統を継続中。職場NGのため派手すぎないよう注意",
+      createdAt: "2023-07-22",
+      lineConnected: true,
+      avatarColor: "#E05252",
+      visits: [
+        {
+          id: 1,
+          date: "2025-11-28",
+          menu: "カット + カラー（ローライト入り）",
+          colorFormula: "【BASE】MILBON オルディーブ 6-R / オキシ6% 1:2 / 放置30分\n【ローライト】オルディーブ 4-R / アルミ巻き8枚 / 放置30分\n仕上がり: 暗め赤褐色 / 6〜4トーン",
+          staff: "山田",
+          price: 17500,
+          notes: "就活シーズン終了でローライト追加。立体感が出て大満足"
+        },
+        {
+          id: 2,
+          date: "2025-08-30",
+          menu: "カット + カラー（フルカラー）",
+          colorFormula: "MILBON オルディーブ 7-R + RR/ オキシ6% 1:2 / 放置30分\n仕上がり: 赤みブラウン 7トーン",
+          staff: "山田",
+          price: 14000,
+          notes: "夏だが職場の規定を考慮してレッドブラウンに留める"
+        },
+        {
+          id: 3,
+          date: "2025-05-16",
+          menu: "カット + カラー（リタッチ）",
+          colorFormula: "MILBON オルディーブ 6-R / オキシ6% / 根元2cm リタッチのみ / 放置30分",
+          staff: "山田",
+          price: 12500,
+          notes: "リタッチのみ。カットは2cmカールしただけ"
+        },
+        {
+          id: 4,
+          date: "2025-02-08",
+          menu: "カット + カラー（フルカラー）",
+          colorFormula: "MILBON オルディーブ 6-R / オキシ6% 1:2 / 放置30分",
+          staff: "山田",
+          price: 14000,
+          notes: "バレンタイン前の気分転換。キャラメルレッドで華やかさを演出"
+        }
+      ]
+    },
+    {
+      id: 7,
+      name: "渡辺 さくら",
+      furigana: "わたなべ さくら",
+      phone: "090-8877-7890",
+      email: "watanabe.sakura@example.com",
+      birthdate: "2001-03-18",
+      allergies: "なし",
+      notes: "大学生。バイトの関係でナチュラル系中心。カットはおまかせスタイルOK。ミルクティー系ベージュが好み",
+      createdAt: "2024-06-14",
+      lineConnected: true,
+      avatarColor: "#4A90D9",
+      visits: [
+        {
+          id: 1,
+          date: "2025-09-20",
+          menu: "カット + カラー（フルカラー）",
+          colorFormula: "MILBON オルディーブ アディクシー スモーキートパーズ 9 + ベージュ 10 (6:4) / オキシ6% / 放置25分\n仕上がり: 9.5トーン ミルクティーベージュ",
+          staff: "山田",
+          price: 13500,
+          notes: "夏明けで少し退色した毛先を整え。ベージュ感を強調"
+        },
+        {
+          id: 2,
+          date: "2025-06-05",
+          menu: "カット + カラー（新規）",
+          colorFormula: "MILBON アディクシー スモーキートパーズ 9 / オキシ6% / 放置25分",
+          staff: "山田",
+          price: 12500,
+          notes: "初来店。前のサロンでオレンジっぽかった履歴あり。アッシュで赤み消し"
+        }
+      ]
+    },
+    {
+      id: 8,
+      name: "中村 梨花",
+      furigana: "なかむら りか",
+      phone: "080-6655-8901",
+      email: "nakamura.rika@example.com",
+      birthdate: "1988-12-05",
+      allergies: "パラベン含有製品でかぶれ歴あり",
+      notes: "産後ヘアケアに注力。スキャルプケア必須。授乳中のため刺激の少ない薬剤を選定。カットのみの来店も多い",
+      createdAt: "2022-11-30",
+      lineConnected: true,
+      avatarColor: "#6BAE8A",
+      visits: [
+        {
+          id: 1,
+          date: "2025-10-10",
+          menu: "カット + スキャルプトリートメント",
+          colorFormula: "（カラーなし）\n【SCALP】LEBEL スキャルプ エッセンス / マッサージ15分",
+          staff: "山田",
+          price: 9500,
+          notes: "産後の抜け毛相談あり。スキャルプ重点的に施術"
+        },
+        {
+          id: 2,
+          date: "2025-07-18",
+          menu: "カット + 弱酸性縮毛矯正",
+          colorFormula: "【縮毛】MILBON リシオ ストレートS液（弱酸性） / 放置20分 / アイロン180℃\n2液: ブロム酸 / 放置10分",
+          staff: "山田",
+          price: 22000,
+          notes: "産後のうねり・くせ毛が強くなったため初縮毛矯正。前後に頭皮ケア"
+        },
+        {
+          id: 3,
+          date: "2025-03-25",
+          menu: "カット + スキャルプトリートメント",
+          colorFormula: "（カラーなし）",
+          staff: "鈴木",
+          price: 8000,
+          notes: "授乳中のためカラーなし。スキャルプケアのみ"
+        },
+        {
+          id: 4,
+          date: "2024-12-20",
+          menu: "カット + カラー（低刺激）",
+          colorFormula: "THROW（ジャスト酸化染料）ライトアッシュ / オキシ3% / 放置20分\nパラベンフリー薬剤使用",
+          staff: "山田",
+          price: 12000,
+          notes: "授乳卒業後初カラー。パラベンフリーのスロウ系薬剤で刺激軽減"
+        },
+        {
+          id: 5,
+          date: "2024-09-05",
+          menu: "カットのみ",
+          colorFormula: "（施術なし）",
+          staff: "山田",
+          price: 5500,
+          notes: "産後初来店。体調確認しながら短時間で終了"
+        }
+      ]
+    }
+  ],
+
+  appointments: [
+    {
+      id: 1,
+      customerId: 3,
+      date: "2026-02-16",
+      startTime: "10:00",
+      endTime: "12:30",
+      menu: "デジタルパーマ + カット",
+      status: "confirmed",
+      staff: "山田",
+      price: 19000
+    },
+    {
+      id: 2,
+      customerId: 5,
+      date: "2026-02-16",
+      startTime: "14:00",
+      endTime: "15:30",
+      menu: "グレイカラー（リタッチ）",
+      status: "confirmed",
+      staff: "鈴木",
+      price: 11000
+    },
+    {
+      id: 3,
+      customerId: 1,
+      date: "2026-02-17",
+      startTime: "11:00",
+      endTime: "13:00",
+      menu: "カット + カラー（フルカラー）",
+      status: "confirmed",
+      staff: "山田",
+      price: 14500
+    },
+    {
+      id: 4,
+      customerId: 7,
+      date: "2026-02-17",
+      startTime: "15:00",
+      endTime: "16:30",
+      menu: "カット + カラー",
+      status: "tentative",
+      staff: "山田",
+      price: 13500
+    },
+    {
+      id: 5,
+      customerId: 4,
+      date: "2026-02-18",
+      startTime: "10:00",
+      endTime: "13:00",
+      menu: "ケアブリーチ + インナーカラー",
+      status: "confirmed",
+      staff: "山田",
+      price: 28000
+    },
+    {
+      id: 6,
+      customerId: 6,
+      date: "2026-02-18",
+      startTime: "14:30",
+      endTime: "16:00",
+      menu: "カット + カラー（ローライト）",
+      status: "confirmed",
+      staff: "山田",
+      price: 17500
+    },
+    {
+      id: 7,
+      customerId: 8,
+      date: "2026-02-19",
+      startTime: "10:00",
+      endTime: "11:30",
+      menu: "カット + スキャルプトリートメント",
+      status: "confirmed",
+      staff: "鈴木",
+      price: 9500
+    },
+    {
+      id: 8,
+      customerId: 2,
+      date: "2026-02-19",
+      startTime: "13:00",
+      endTime: "16:00",
+      menu: "ブリーチ + ハイライト + トーニング",
+      status: "tentative",
+      staff: "山田",
+      price: 24000
+    },
+    {
+      id: 9,
+      customerId: 5,
+      date: "2026-02-20",
+      startTime: "09:30",
+      endTime: "11:00",
+      menu: "カット + グレイカラー",
+      status: "cancelled",
+      staff: "山田",
+      price: 13500
+    },
+    {
+      id: 10,
+      customerId: 1,
+      date: "2026-02-21",
+      startTime: "11:00",
+      endTime: "13:30",
+      menu: "カット + カラー + トリートメント",
+      status: "tentative",
+      staff: "山田",
+      price: 16800
+    }
+  ],
+
+  lineHistory: [
+    {
+      id: 1,
+      customerId: 7,
+      sentAt: "2026-02-10 14:30",
+      message: "渡辺さん、こんにちは！前回のカラーから約5ヶ月が経ちました。お元気でしょうか？そろそろカラーのリタッチやスタイルチェンジはいかがでしょうか？ぜひまたお待ちしております✂",
+      status: "delivered"
+    },
+    {
+      id: 2,
+      customerId: 2,
+      sentAt: "2026-01-25 10:15",
+      message: "佐藤さん、こんにちは！前回のハイライトから3ヶ月以上が経ちました。そろそろ根元も気になっていませんか？ご予約はいつでもLINEでお気軽にどうぞ！",
+      status: "delivered"
+    },
+    {
+      id: 3,
+      customerId: 7,
+      sentAt: "2025-12-20 16:00",
+      message: "渡辺さん、年末のスタイルチェンジはいかがですか？お得な年末カラーキャンペーンを実施中です。ぜひご来店お待ちしております！",
+      status: "delivered"
+    },
+    {
+      id: 4,
+      customerId: 8,
+      sentAt: "2025-12-05 11:00",
+      message: "中村さん、こんにちは！スキャルプケアのご状況はいかがでしょうか？産後の抜け毛ケアに効果的なトリートメントもご用意しています。ぜひご相談ください！",
+      status: "failed"
+    },
+    {
+      id: 5,
+      customerId: 6,
+      sentAt: "2025-11-01 13:45",
+      message: "伊藤さん、こんにちは！前回のカラーから3ヶ月が経ちました。そろそろリタッチのタイミングです✨ ご都合の良い日時をお知らせください！",
+      status: "delivered"
+    }
+  ]
+};
+
+// =============================================================================
+// APP STATE
+// =============================================================================
+let currentScreen = 'dashboard';
+let currentCustomerId = null;
+let selectedLineCustomer = null;
+let calendarWeekOffset = 0;
+let sentCustomers = new Set();
+
+// =============================================================================
+// UTILITIES
+// =============================================================================
+function getToday() {
+  return new Date(2026, 1, 18); // 2026-02-18 (fixed demo date)
+}
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+function formatDateShort(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return `${d.getMonth() + 1}/${d.getDate()}`;
+}
+
+function daysSince(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const today = getToday();
+  return Math.floor((today - d) / (1000 * 60 * 60 * 24));
+}
+
+function getLastVisit(customer) {
+  if (!customer.visits || customer.visits.length === 0) return null;
+  return customer.visits.reduce((a, b) => a.date > b.date ? a : b);
+}
+
+function isOverdue(customer) {
+  const last = getLastVisit(customer);
+  if (!last) return true;
+  return daysSince(last.date) >= 90;
+}
+
+function getOverdueCustomers() {
+  return DUMMY_DATA.customers.filter(c => isOverdue(c));
+}
+
+function addDays(date, n) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + n);
+  return d;
+}
+
+function dateToStr(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function getWeekDates(offset) {
+  const today = getToday();
+  const dayOfWeek = today.getDay(); // 0=Sun
+  const monday = addDays(today, -dayOfWeek + 1 + offset * 7);
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    days.push(addDays(monday, i));
+  }
+  return days;
+}
+
+function getAvatarBg(customer) {
+  return customer.avatarColor || '#7C5CBF';
+}
+
+function getInitials(name) {
+  return name.replace(/\s/g, '').charAt(0);
+}
+
+function getMenuTags(customer) {
+  const menus = new Set();
+  (customer.visits || []).forEach(v => {
+    if (v.menu.includes('カラー') || v.menu.includes('ハイライト') || v.menu.includes('ブリーチ')) menus.add('カラー');
+    if (v.menu.includes('カット')) menus.add('カット');
+    if (v.menu.includes('パーマ')) menus.add('パーマ');
+    if (v.menu.includes('トリートメント') || v.menu.includes('スキャルプ')) menus.add('ケア');
+    if (v.menu.includes('縮毛')) menus.add('縮毛矯正');
+    if (v.menu.includes('ヘアセット')) menus.add('セット');
+  });
+  return [...menus];
+}
+
+function getCustomerById(id) {
+  return DUMMY_DATA.customers.find(c => c.id === id);
+}
+
+function addNextVisitDate(lastDate) {
+  const d = new Date(lastDate + 'T00:00:00');
+  d.setMonth(d.getMonth() + 3);
+  return dateToStr(d);
+}
+
+function generateMessage(customer) {
+  const last = getLastVisit(customer);
+  const dayCount = last ? daysSince(last.date) : 0;
+  const months = Math.floor(dayCount / 30);
+  const menuShort = last ? last.menu.split('（')[0].split('+')[0].trim() : 'ご来店';
+  return `${customer.name.split(' ')[0]}さん、こんにちは！SalonOSよりご連絡です。\n\n前回の${menuShort}から約${months}ヶ月が経ちました。そろそろ気になってきていませんか？\n\nいつでもLINEでご予約・ご相談をお待ちしております✂\n\nご予約はこちら▶ https://salon-os.example.com/booking`;
+}
+
+// =============================================================================
+// NAVIGATION
+// =============================================================================
+function navigate(screen, customerId) {
+  currentScreen = screen;
+
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  const screenId = screen === 'customer-detail' ? 'screen-customer-detail' : `screen-${screen}`;
+  const el = document.getElementById(screenId);
+  if (el) el.classList.add('active');
+
+  const navScreen = screen === 'customer-detail' ? 'customers' : screen;
+  document.querySelector(`[data-screen="${navScreen}"]`)?.classList.add('active');
+
+  const titles = {
+    dashboard: 'ダッシュボード',
+    appointments: '予約管理',
+    customers: '顧客カルテ一覧',
+    'customer-detail': '顧客カルテ詳細',
+    'line-send': 'LINE送信シミュレーター'
+  };
+  document.getElementById('topbar-title').textContent = titles[screen] || '';
+
+  if (screen === 'customer-detail' && customerId) {
+    currentCustomerId = customerId;
+    renderCustomerDetail(customerId);
+  } else if (screen === 'appointments') {
+    renderCalendar();
+  } else if (screen === 'line-send') {
+    renderLineSend();
+  } else if (screen === 'customers') {
+    filterCustomers('');
+  }
+
+  window.scrollTo(0, 0);
+}
+
+// =============================================================================
+// RENDER: DASHBOARD
+// =============================================================================
+function renderDashboard() {
+  // Date
+  const today = getToday();
+  document.getElementById('topbar-date').textContent =
+    today.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
+
+  // KPI
+  const kpiGrid = document.getElementById('kpi-grid');
+  const kpis = [
+    { label: '月次売上', value: '¥', num: '842,000', unit: '', change: '+12%', up: true, cls: 'purple', icon: '💴' },
+    { label: '新規顧客数', value: '', num: '8', unit: '名', change: '+3名', up: true, cls: 'green', icon: '🌱' },
+    { label: 'リピート率', value: '', num: '87', unit: '%', change: '+2pt', up: true, cls: 'orange', icon: '🔄' },
+    { label: 'LINE送信数', value: '', num: '23', unit: '件', change: '先月比 +5件', up: true, cls: 'pink', icon: '💬' },
+  ];
+  kpiGrid.innerHTML = kpis.map(k => `
+    <div class="kpi-card ${k.cls}">
+      <div class="kpi-icon">${k.icon}</div>
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${k.value}${k.num}<span class="kpi-unit">${k.unit}</span></div>
+      <div class="kpi-change up">↑ ${k.change} (前月比)</div>
+    </div>
+  `).join('');
+
+  // Today's appointments
+  const todayStr = '2026-02-18';
+  const todayAppts = DUMMY_DATA.appointments.filter(a => a.date === todayStr)
+    .sort((a, b) => a.startTime.localeCompare(b.startTime));
+  document.getElementById('today-count').textContent = todayAppts.length + '件';
+  const apptList = document.getElementById('today-appt-list');
+  if (todayAppts.length === 0) {
+    apptList.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>本日の予約はありません</p></div>';
+  } else {
+    apptList.innerHTML = todayAppts.map(a => {
+      const c = getCustomerById(a.customerId);
+      const statusLabel = { confirmed: '確定', tentative: '仮押さえ', cancelled: 'キャンセル' }[a.status];
+      return `
+        <div class="appt-item" onclick="navigate('customer-detail', ${a.customerId})">
+          <div class="appt-time">${a.startTime}</div>
+          <div class="appt-bar bar-${a.status}"></div>
+          <div class="appt-info">
+            <div class="appt-name">${c ? c.name : '不明'}</div>
+            <div class="appt-menu">${a.menu} / ${a.staff}</div>
+          </div>
+          <div class="appt-price">¥${a.price.toLocaleString()}</div>
+          <div class="status-dot dot-${a.status}"></div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Alert list
+  const overdue = getOverdueCustomers();
+  document.getElementById('alert-count').textContent = overdue.length + '名';
+  const alertList = document.getElementById('alert-list');
+  alertList.innerHTML = overdue.map(c => {
+    const last = getLastVisit(c);
+    const days = last ? daysSince(last.date) : 999;
+    return `
+      <div class="alert-item" onclick="navigate('customer-detail', ${c.id})" style="cursor:pointer;">
+        <div class="avatar" style="background:${getAvatarBg(c)};width:28px;height:28px;font-size:11px;">${getInitials(c.name)}</div>
+        <div class="name">${c.name}</div>
+        <div class="days">${days}日未来店</div>
+        <button class="btn btn-line btn-sm" onclick="event.stopPropagation();navigate('line-send')">LINE</button>
+      </div>
+    `;
+  }).join('');
+
+  // Recent karte
+  const sorted = [...DUMMY_DATA.customers].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const recent = sorted.slice(0, 4);
+  const karteList = document.getElementById('recent-karte-list');
+  karteList.innerHTML = recent.map(c => {
+    const last = getLastVisit(c);
+    return `
+      <div class="karte-mini" onclick="navigate('customer-detail', ${c.id})">
+        <div class="avatar" style="background:${getAvatarBg(c)}">${getInitials(c.name)}</div>
+        <div class="info">
+          <div class="name">${c.name}</div>
+          <div class="sub">${last ? last.menu.split('（')[0] : '来店履歴なし'}</div>
+        </div>
+        <div class="meta">
+          <div class="date">${last ? formatDateShort(last.date) : '-'}</div>
+          <div style="font-size:10px;color:var(--text-muted);">最終来店</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// =============================================================================
+// RENDER: CALENDAR
+// =============================================================================
+const HOURS = ['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00'];
+const DOW = ['月','火','水','木','金','土','日'];
+const DOW_FULL = ['月曜日','火曜日','水曜日','木曜日','金曜日','土曜日','日曜日'];
+
+function prevWeek() { calendarWeekOffset--; renderCalendar(); }
+function nextWeek() { calendarWeekOffset++; renderCalendar(); }
+
+function renderCalendar() {
+  const weekDates = getWeekDates(calendarWeekOffset);
+  const todayStr = dateToStr(getToday());
+
+  // Header
+  const startStr = `${weekDates[0].getMonth()+1}月${weekDates[0].getDate()}日`;
+  const endStr = `${weekDates[6].getMonth()+1}月${weekDates[6].getDate()}日`;
+  document.getElementById('week-label').textContent =
+    `${weekDates[0].getFullYear()}年 ${startStr} 〜 ${endStr}`;
+
+  const grid = document.getElementById('week-grid');
+  let html = '';
+
+  // Header row
+  html += `<div class="time-col-header"></div>`;
+  weekDates.forEach((d, i) => {
+    const ds = dateToStr(d);
+    const isToday = ds === todayStr;
+    const domHtml = isToday
+      ? `<div class="dom" style="background:var(--primary);color:white;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto;">${d.getDate()}</div>`
+      : `<div class="dom" style="font-size:16px;color:var(--primary);">${d.getDate()}</div>`;
+    html += `<div class="week-header-cell${isToday?' today':''}">
+      <div class="dow">${DOW[i]}</div>
+      ${domHtml}
+    </div>`;
+  });
+
+  // Time rows
+  HOURS.forEach((hour, hi) => {
+    html += `<div class="time-label">${hour}</div>`;
+    weekDates.forEach((d, di) => {
+      const ds = dateToStr(d);
+      // Find appointments in this cell (per-hour)
+      const appts = DUMMY_DATA.appointments.filter(a => {
+        if (a.date !== ds) return false;
+        const aHour = parseInt(a.startTime.split(':')[0]);
+        const cellHour = parseInt(hour.split(':')[0]);
+        return aHour === cellHour;
+      });
+
+      let cellContent = '';
+      appts.forEach(a => {
+        const c = getCustomerById(a.customerId);
+        const startMin = parseInt(a.startTime.split(':')[1]);
+        const endH = parseInt(a.endTime.split(':')[0]);
+        const endM = parseInt(a.endTime.split(':')[1]);
+        const startH = parseInt(a.startTime.split(':')[0]);
+        const durationHours = (endH * 60 + endM - startH * 60 - startMin) / 60;
+        const topPx = (startMin / 60) * 48;
+        const heightPx = Math.max(durationHours * 48 - 2, 30);
+        cellContent += `
+          <div class="cal-event ${a.status}"
+               style="top:${topPx}px;height:${heightPx}px;"
+               onclick="navigate('customer-detail', ${a.customerId})"
+               title="${c ? c.name : ''} / ${a.menu}">
+            <div class="ev-name">${c ? c.name.split(' ')[0] : '?'}</div>
+            <div class="ev-menu">${a.menu.split('（')[0]}</div>
+          </div>
+        `;
+      });
+
+      html += `<div class="time-cell" data-date="${ds}" data-hour="${hour}">${cellContent}</div>`;
+    });
+  });
+
+  grid.innerHTML = html;
+}
+
+// =============================================================================
+// RENDER: CUSTOMERS
+// =============================================================================
+function renderCustomerGrid(customers) {
+  const grid = document.getElementById('customer-grid');
+  document.getElementById('customer-count').textContent = `${customers.length}名`;
+
+  if (customers.length === 0) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="icon">🔍</div><p>該当する顧客が見つかりません</p></div>';
+    return;
+  }
+
+  grid.innerHTML = customers.map(c => {
+    const last = getLastVisit(c);
+    const overdue = isOverdue(c);
+    const tags = getMenuTags(c);
+    const days = last ? daysSince(last.date) : 999;
+
+    return `
+      <div class="customer-card" onclick="navigate('customer-detail', ${c.id})">
+        ${overdue ? '<div class="overdue-badge">要フォロー</div>' : ''}
+        <div class="customer-card-header">
+          <div class="avatar" style="background:${getAvatarBg(c)};width:44px;height:44px;font-size:17px;">${getInitials(c.name)}</div>
+          <div>
+            <div class="name">${c.name}</div>
+            <div class="furigana">${c.furigana}</div>
+            ${c.lineConnected ? '<div class="line-badge" style="margin-top:3px;">🟢 LINE連携済</div>' : ''}
+          </div>
+        </div>
+        <div class="last-visit">
+          最終来店: ${last ? formatDate(last.date) : '来店なし'}
+          ${overdue ? `<span style="color:var(--danger);font-size:11px;font-weight:700;margin-left:6px;">(${days}日前)</span>` : ''}
+        </div>
+        <div class="visit-count">
+          <span>📌 ${c.visits.length}回来店</span>
+        </div>
+        <div class="service-icons">
+          ${tags.map(t => `<span class="service-tag">${t}</span>`).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function filterCustomers(query) {
+  const q = query.toLowerCase();
+  const filtered = DUMMY_DATA.customers.filter(c => {
+    if (!q) return true;
+    if (c.name.toLowerCase().includes(q) || c.furigana.includes(q)) return true;
+    const tags = getMenuTags(c);
+    if (tags.some(t => t.toLowerCase().includes(q))) return true;
+    if (c.visits.some(v => v.menu.toLowerCase().includes(q))) return true;
+    return false;
+  });
+  renderCustomerGrid(filtered);
+}
+
+// =============================================================================
+// RENDER: CUSTOMER DETAIL
+// =============================================================================
+function renderCustomerDetail(customerId) {
+  const c = getCustomerById(customerId);
+  if (!c) return;
+
+  const last = getLastVisit(c);
+  const nextVisit = last ? addNextVisitDate(last.date) : null;
+  const overdue = isOverdue(c);
+
+  const layout = document.getElementById('detail-layout');
+
+  // Profile column
+  const profileHTML = `
+    <div>
+      <div class="profile-card">
+        <div class="profile-avatar-lg" style="background:${getAvatarBg(c)}">${getInitials(c.name)}</div>
+        <div class="profile-name">${c.name}</div>
+        <div class="profile-furigana">${c.furigana}</div>
+        ${overdue ? '<div style="text-align:center;margin-bottom:10px;"><span class="badge badge-danger">⚠ 3ヶ月以上未来店</span></div>' : ''}
+        ${c.lineConnected ? '<div style="text-align:center;margin-bottom:14px;"><span class="line-badge">🟢 LINE連携済</span></div>' : '<div style="text-align:center;margin-bottom:14px;"><span class="badge badge-muted">LINE未連携</span></div>'}
+        <div class="profile-actions">
+          ${c.lineConnected ? `<button class="btn btn-line btn-sm" onclick="openLinePreview(${c.id})">💬 LINE送信</button>` : '<button class="btn btn-secondary btn-sm" disabled>LINE未連携</button>'}
+          <button class="btn btn-secondary btn-sm" onclick="openModal()">＋ 予約追加</button>
+        </div>
+        <table class="profile-info-table">
+          <tr><th>電話</th><td>${c.phone}</td></tr>
+          <tr><th>メール</th><td style="font-size:11px;">${c.email}</td></tr>
+          <tr><th>誕生日</th><td>${c.birthdate.replace(/-/g, '/')}</td></tr>
+          <tr><th>アレルギー</th><td style="color:${c.allergies !== 'なし' ? 'var(--danger)' : 'inherit'};font-weight:${c.allergies !== 'なし' ? '700' : '400'};">${c.allergies}</td></tr>
+          <tr><th>来店回数</th><td><strong>${c.visits.length}回</strong></td></tr>
+          <tr><th>登録日</th><td>${c.createdAt.replace(/-/g, '/')}</td></tr>
+        </table>
+        <div style="margin-top:14px;padding:12px;background:var(--bg);border-radius:8px;font-size:12px;color:var(--text-secondary);line-height:1.6;">
+          <div style="font-size:10px;font-weight:700;color:var(--text-muted);margin-bottom:4px;">備考・スタイリストメモ</div>
+          ${c.notes}
+        </div>
+        ${nextVisit ? `
+        <div class="next-visit-box" style="margin-top:14px;">
+          <div class="label">次回来店推奨日</div>
+          <div class="date">${formatDate(nextVisit)}</div>
+          <div class="sub">前回来店から3ヶ月後</div>
+        </div>
+        ` : ''}
+      </div>
+    </div>
+  `;
+
+  // Timeline column
+  const sortedVisits = [...c.visits].sort((a, b) => b.date.localeCompare(a.date));
+  const timelineHTML = `
+    <div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📋 施術履歴タイムライン（${sortedVisits.length}件）</div>
+        </div>
+        <div class="timeline">
+          ${sortedVisits.map((v, i) => `
+            <div class="timeline-item">
+              <div class="timeline-card">
+                <div class="tl-header">
+                  <div class="tl-date">${formatDate(v.date)} / 担当: ${v.staff}</div>
+                  <div class="tl-price">¥${v.price.toLocaleString()}</div>
+                </div>
+                <div class="tl-menu">${v.menu}</div>
+                ${v.colorFormula && v.colorFormula !== '（施術なし）' ? `
+                <div class="tl-formula">${v.colorFormula.replace(/\n/g, '<br>')}</div>
+                ` : ''}
+                ${v.notes ? `<div class="tl-footer">📝 ${v.notes}</div>` : ''}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+
+  layout.innerHTML = profileHTML + timelineHTML;
+}
+
+function openLinePreview(customerId) {
+  navigate('line-send');
+  setTimeout(() => {
+    selectLineCustomer(customerId);
+  }, 100);
+}
+
+// =============================================================================
+// RENDER: LINE SEND
+// =============================================================================
+function renderLineSend() {
+  const overdue = getOverdueCustomers();
+  document.getElementById('line-target-count').textContent = overdue.length + '名';
+
+  // Customer list
+  const list = document.getElementById('line-customer-list');
+  list.innerHTML = overdue.map(c => {
+    const last = getLastVisit(c);
+    const days = last ? daysSince(last.date) : 999;
+    const isSent = sentCustomers.has(c.id);
+    return `
+      <div class="line-customer-item ${selectedLineCustomer === c.id ? 'selected' : ''}"
+           id="line-item-${c.id}"
+           onclick="selectLineCustomer(${c.id})">
+        <div class="avatar" style="background:${getAvatarBg(c)};width:36px;height:36px;font-size:14px;">${getInitials(c.name)}</div>
+        <div class="info">
+          <div class="name">${c.name}</div>
+          <div class="sub">${days}日未来店 / ${c.lineConnected ? '🟢 LINE連携' : '❌ LINE未連携'}</div>
+        </div>
+        ${isSent ? '<span class="badge badge-success">送信済</span>' : ''}
+        ${!c.lineConnected ? '<span class="badge badge-muted">未連携</span>' : ''}
+      </div>
+    `;
+  }).join('');
+
+  // History
+  renderLineHistory();
+}
+
+function selectLineCustomer(customerId) {
+  selectedLineCustomer = customerId;
+  const c = getCustomerById(customerId);
+  if (!c) return;
+
+  // Update selection highlight
+  document.querySelectorAll('.line-customer-item').forEach(el => el.classList.remove('selected'));
+  const itemEl = document.getElementById(`line-item-${customerId}`);
+  if (itemEl) itemEl.classList.add('selected');
+
+  const msg = generateMessage(c);
+  const previewBox = document.getElementById('line-preview-box');
+  const alreadySent = sentCustomers.has(customerId);
+
+  previewBox.innerHTML = `
+    <div class="section-title" style="margin-bottom:12px;">
+      ${c.name} へのメッセージ
+    </div>
+    <div class="line-phone-mock">
+      <div class="line-phone-header">SalonOS 公式LINE</div>
+      <div style="display:flex;align-items:flex-start;gap:8px;">
+        <div style="width:32px;height:32px;background:#00C300;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">✂</div>
+        <div>
+          <div class="line-sender-name">SalonOS Beauty</div>
+          <div class="line-chat-bubble">${msg.replace(/\n/g, '<br>')}</div>
+        </div>
+      </div>
+      <div style="text-align:right;margin-top:6px;color:rgba(255,255,255,.4);font-size:10px;">
+        ${alreadySent ? '既読 1' : '未送信'}
+      </div>
+    </div>
+    <div class="send-btn-wrap">
+      <div class="send-success ${alreadySent ? 'show' : ''}" id="send-success-${customerId}">
+        <div class="checkmark">✅</div>
+        <div class="msg">送信完了しました！</div>
+      </div>
+      ${!alreadySent ? `
+      <button class="btn btn-line" onclick="sendMessage(${customerId})" ${!c.lineConnected ? 'disabled title="LINE未連携"' : ''}>
+        ${c.lineConnected ? '🟢 このメッセージを送信' : '❌ LINE未連携のため送信不可'}
+      </button>
+      ` : `<button class="btn btn-secondary" disabled>送信済み</button>`}
+    </div>
+  `;
+}
+
+function sendMessage(customerId) {
+  const c = getCustomerById(customerId);
+  if (!c || !c.lineConnected) return;
+
+  sentCustomers.add(customerId);
+
+  const successEl = document.getElementById(`send-success-${customerId}`);
+  if (successEl) {
+    successEl.classList.add('show');
+  }
+
+  // Add to history
+  const newEntry = {
+    id: DUMMY_DATA.lineHistory.length + 1,
+    customerId: customerId,
+    sentAt: new Date().toLocaleString('ja-JP').replace(/\//g, '-'),
+    message: generateMessage(c),
+    status: 'delivered'
+  };
+  DUMMY_DATA.lineHistory.unshift(newEntry);
+  renderLineHistory();
+
+  // Refresh customer item
+  setTimeout(() => renderLineSend(), 500);
+}
+
+function sendAll() {
+  const overdue = getOverdueCustomers().filter(c => c.lineConnected);
+  overdue.forEach(c => {
+    if (!sentCustomers.has(c.id)) {
+      sentCustomers.add(c.id);
+      const newEntry = {
+        id: DUMMY_DATA.lineHistory.length + 1,
+        customerId: c.id,
+        sentAt: new Date().toLocaleString('ja-JP'),
+        message: generateMessage(c),
+        status: 'delivered'
+      };
+      DUMMY_DATA.lineHistory.unshift(newEntry);
+    }
+  });
+  renderLineSend();
+  if (selectedLineCustomer) {
+    setTimeout(() => selectLineCustomer(selectedLineCustomer), 100);
+  }
+}
+
+function renderLineHistory() {
+  const table = document.getElementById('history-table');
+  const history = DUMMY_DATA.lineHistory.slice(0, 8);
+  const statusLabel = { delivered: '配信済', failed: '失敗', pending: '送信中' };
+  const statusPill = { delivered: 'pill-delivered', failed: 'pill-failed', pending: 'pill-pending' };
+
+  table.innerHTML = `
+    <thead>
+      <tr>
+        <th>送信日時</th>
+        <th>顧客名</th>
+        <th>メッセージ（抜粋）</th>
+        <th>ステータス</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${history.map(h => {
+        const c = getCustomerById(h.customerId);
+        return `
+          <tr>
+            <td style="white-space:nowrap;">${h.sentAt}</td>
+            <td>${c ? c.name : '不明'}</td>
+            <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${h.message}</td>
+            <td><span class="status-pill ${statusPill[h.status]}">${statusLabel[h.status]}</span></td>
+          </tr>
+        `;
+      }).join('')}
+    </tbody>
+  `;
+}
+
+// =============================================================================
+// MODAL
+// =============================================================================
+function openModal() {
+  document.getElementById('modal-overlay').classList.add('open');
+  // Fill customer select
+  const sel = document.getElementById('modal-customer');
+  sel.innerHTML = '<option value="">顧客を選択...</option>' +
+    DUMMY_DATA.customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  // Default date
+  document.getElementById('modal-date').value = '2026-02-18';
+}
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+function closeModalOutside(e) {
+  if (e.target.id === 'modal-overlay') closeModal();
+}
+function saveAppointment() {
+  closeModal();
+  alert('予約を追加しました！（デモ: データは保存されません）');
+}
+
+// =============================================================================
+// INIT
+// =============================================================================
+document.addEventListener('DOMContentLoaded', () => {
+  renderDashboard();
+  renderCustomerGrid(DUMMY_DATA.customers);
+  // Set today date in topbar
+  const today = getToday();
+  document.getElementById('topbar-date').textContent =
+    today.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
+});
+</script>
+</body>
+</html>

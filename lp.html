@@ -1,0 +1,1882 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SalonOS - 美容室専門の予約・顧客管理SaaS</title>
+  <meta name="description" content="LINE予約・顧客カルテ・売上管理が月額2,980円でひとつに。HOT PEPPERに頼らない美容室経営を始めませんか。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+JP:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --rose: #f43f5e;
+      --rose-dark: #e11d48;
+      --rose-light: #fff1f2;
+      --rose-mid: #fda4af;
+      --gold: #d4af37;
+      --gold-light: #fef3c7;
+      --navy: #0f172a;
+      --navy-light: #1e293b;
+      --gray-50: #f8fafc;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-300: #cbd5e1;
+      --gray-400: #94a3b8;
+      --gray-500: #64748b;
+      --gray-600: #475569;
+      --gray-700: #334155;
+      --gray-800: #1e293b;
+      --white: #ffffff;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.05);
+      --shadow: 0 4px 6px rgba(0,0,0,.07);
+      --shadow-md: 0 8px 24px rgba(0,0,0,.10);
+      --shadow-lg: 0 20px 48px rgba(0,0,0,.12);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --radius-lg: 20px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      font-family: 'Noto Sans JP', 'Inter', sans-serif;
+      color: var(--gray-800);
+      background: var(--white);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ======= UTILITY ======= */
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #f43f5e 0%, #d4af37 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .section-label {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--rose);
+      background: var(--rose-light);
+      padding: 4px 14px;
+      border-radius: 99px;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: clamp(26px, 4vw, 40px);
+      font-weight: 900;
+      line-height: 1.3;
+      color: var(--navy);
+      margin-bottom: 16px;
+    }
+
+    .section-sub {
+      font-size: 17px;
+      color: var(--gray-500);
+      max-width: 560px;
+    }
+
+    /* ======= BUTTONS ======= */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border-radius: 99px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--rose) 0%, var(--rose-dark) 100%);
+      color: white;
+      box-shadow: 0 4px 16px rgba(244, 63, 94, 0.35);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(244, 63, 94, 0.45);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--gray-700);
+      border: 2px solid var(--gray-300);
+    }
+    .btn-outline:hover {
+      background: var(--gray-50);
+      border-color: var(--gray-400);
+    }
+
+    .btn-white {
+      background: white;
+      color: var(--rose);
+      box-shadow: 0 4px 20px rgba(0,0,0,.15);
+    }
+    .btn-white:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(0,0,0,.20);
+    }
+
+    .btn-nav {
+      display: inline-flex;
+      align-items: center;
+      padding: 10px 22px;
+      border-radius: 99px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      background: linear-gradient(135deg, var(--rose) 0%, var(--rose-dark) 100%);
+      color: white;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 10px rgba(244,63,94,.25);
+    }
+    .btn-nav:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(244,63,94,.35);
+    }
+
+    /* ======= NAVIGATION ======= */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      padding: 0;
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+      background: transparent;
+    }
+
+    nav.nav-scrolled {
+      background: white;
+      box-shadow: 0 1px 12px rgba(0,0,0,.08);
+    }
+
+    .nav-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-logo {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--navy);
+      letter-spacing: -0.02em;
+    }
+
+    .nav-links {
+      list-style: none;
+      display: flex;
+      gap: 36px;
+    }
+
+    .nav-links li {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gray-600);
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .nav-links li:hover { color: var(--rose); }
+
+    /* ======= HERO ======= */
+    #hero {
+      min-height: 100vh;
+      background: linear-gradient(160deg, #fff0f3 0%, #ffffff 40%, #fffbeb 100%);
+      display: flex;
+      align-items: center;
+      padding: 120px 0 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #hero::before {
+      content: '';
+      position: absolute;
+      top: -200px;
+      right: -200px;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(244,63,94,.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    #hero::after {
+      content: '';
+      position: absolute;
+      bottom: -100px;
+      left: -100px;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(212,175,55,.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--rose-light);
+      border: 1px solid var(--rose-mid);
+      color: var(--rose-dark);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 6px 16px;
+      border-radius: 99px;
+      margin-bottom: 24px;
+    }
+
+    .hero-h1 {
+      font-size: clamp(30px, 4.5vw, 52px);
+      font-weight: 900;
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+      margin-bottom: 24px;
+      color: var(--navy);
+    }
+
+    .hero-sub {
+      font-size: 17px;
+      color: var(--gray-600);
+      line-height: 1.8;
+      margin-bottom: 36px;
+      max-width: 480px;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 32px;
+    }
+
+    .hero-trust {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-500);
+    }
+
+    .trust-check {
+      width: 18px;
+      height: 18px;
+      background: var(--rose);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 10px;
+      flex-shrink: 0;
+    }
+
+    /* === MOCKUP === */
+    .hero-mockup {
+      position: relative;
+    }
+
+    .browser-frame {
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg), 0 0 0 1px rgba(0,0,0,.05);
+      overflow: hidden;
+    }
+
+    .browser-bar {
+      background: var(--gray-100);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .browser-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    .browser-dot:nth-child(1) { background: #ff5f57; }
+    .browser-dot:nth-child(2) { background: #febc2e; }
+    .browser-dot:nth-child(3) { background: #28c840; }
+
+    .browser-url {
+      flex: 1;
+      background: white;
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 11px;
+      color: var(--gray-400);
+      margin-left: 8px;
+    }
+
+    .dashboard-inner {
+      padding: 20px;
+      background: var(--gray-50);
+    }
+
+    .dash-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .dash-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .dash-date {
+      font-size: 11px;
+      color: var(--gray-400);
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .kpi-card {
+      background: white;
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .kpi-label {
+      font-size: 10px;
+      color: var(--gray-400);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .kpi-value {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--navy);
+      line-height: 1;
+    }
+
+    .kpi-value.rose { color: var(--rose); }
+    .kpi-value.gold { color: var(--gold); }
+
+    .kpi-change {
+      font-size: 10px;
+      color: #22c55e;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .booking-list-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gray-600);
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .booking-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--gray-100);
+    }
+
+    .booking-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .booking-info { flex: 1; }
+    .booking-name { font-size: 11px; font-weight: 700; color: var(--navy); }
+    .booking-service { font-size: 10px; color: var(--gray-400); }
+
+    .booking-time {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--gray-500);
+    }
+
+    .booking-status {
+      font-size: 9px;
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-weight: 700;
+    }
+
+    .status-confirmed { background: #dcfce7; color: #16a34a; }
+    .status-pending { background: #fef9c3; color: #ca8a04; }
+    .status-done { background: var(--gray-100); color: var(--gray-500); }
+
+    /* ======= PROBLEM SECTION ======= */
+    #problem {
+      background: var(--navy);
+      padding: 100px 0;
+    }
+
+    #problem .section-title { color: white; }
+    #problem .section-label { color: var(--rose-mid); background: rgba(244,63,94,.15); }
+
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 56px;
+    }
+
+    .problem-card {
+      background: var(--navy-light);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: var(--radius);
+      padding: 32px;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .problem-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(0,0,0,.3);
+    }
+
+    .problem-icon {
+      font-size: 36px;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .problem-card h3 {
+      font-size: 17px;
+      font-weight: 800;
+      color: white;
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+
+    .problem-card p {
+      font-size: 14px;
+      color: rgba(255,255,255,.55);
+      line-height: 1.75;
+    }
+
+    /* ======= SOLUTION SECTION ======= */
+    #solution {
+      padding: 100px 0;
+      background: var(--white);
+    }
+
+    .solution-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .solution-points {
+      margin-top: 36px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .solution-point {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .solution-point-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--rose-light);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .solution-point-text h4 {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+
+    .solution-point-text p {
+      font-size: 14px;
+      color: var(--gray-500);
+      line-height: 1.7;
+    }
+
+    /* Customer Detail Mockup */
+    .customer-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg), 0 0 0 1px rgba(0,0,0,.05);
+      overflow: hidden;
+    }
+
+    .customer-card-header {
+      background: linear-gradient(135deg, var(--rose) 0%, var(--rose-dark) 100%);
+      padding: 24px;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .customer-avatar-large {
+      width: 56px;
+      height: 56px;
+      background: rgba(255,255,255,.25);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .customer-meta h3 {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 2px;
+    }
+
+    .customer-meta p { font-size: 13px; opacity: 0.8; }
+
+    .customer-tags {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .customer-tag {
+      background: rgba(255,255,255,.2);
+      color: white;
+      font-size: 11px;
+      padding: 2px 10px;
+      border-radius: 99px;
+      font-weight: 600;
+    }
+
+    .customer-card-body {
+      padding: 20px;
+    }
+
+    .customer-section-title {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--gray-400);
+      margin-bottom: 12px;
+    }
+
+    .customer-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .customer-stat {
+      text-align: center;
+      background: var(--gray-50);
+      border-radius: var(--radius-sm);
+      padding: 10px 8px;
+    }
+
+    .customer-stat-val {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--navy);
+    }
+
+    .customer-stat-label {
+      font-size: 10px;
+      color: var(--gray-400);
+      margin-top: 2px;
+    }
+
+    .recipe-card {
+      background: var(--navy);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      margin-bottom: 12px;
+    }
+
+    .recipe-label {
+      font-size: 10px;
+      color: rgba(255,255,255,.5);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .recipe-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .recipe-swatch {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+    }
+
+    .recipe-text {
+      font-size: 12px;
+      color: white;
+      font-weight: 600;
+    }
+
+    /* ======= FEATURES SECTION ======= */
+    #features {
+      padding: 100px 0;
+      background: var(--gray-50);
+    }
+
+    #features .section-title,
+    #features .section-sub {
+      text-align: center;
+    }
+
+    #features .section-sub { margin: 0 auto; }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 56px;
+    }
+
+    .feature-card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--gray-200);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .feature-icon {
+      font-size: 32px;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .feature-card h3 {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 10px;
+    }
+
+    .feature-card p {
+      font-size: 14px;
+      color: var(--gray-500);
+      line-height: 1.7;
+    }
+
+    /* ======= COMPARISON ======= */
+    #comparison {
+      padding: 100px 0;
+      background: white;
+    }
+
+    #comparison .section-title,
+    #comparison .section-sub {
+      text-align: center;
+    }
+
+    #comparison .section-sub { margin: 0 auto; }
+
+    .comparison-table-wrap {
+      margin-top: 56px;
+      overflow-x: auto;
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      padding: 16px 24px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .comparison-table th:first-child,
+    .comparison-table td:first-child {
+      text-align: left;
+      font-weight: 600;
+      color: var(--gray-700);
+    }
+
+    .comparison-table thead th {
+      background: var(--navy);
+      color: white;
+      font-weight: 800;
+      font-size: 15px;
+    }
+
+    .comparison-table thead th.col-salon {
+      background: var(--rose);
+    }
+
+    .comparison-table thead th:first-child {
+      background: var(--navy-light);
+    }
+
+    .comparison-table tbody tr:nth-child(even) {
+      background: var(--gray-50);
+    }
+
+    .comparison-table td.col-salon {
+      background: var(--rose-light);
+      color: var(--rose-dark);
+      font-weight: 700;
+    }
+
+    .comparison-table tbody tr:nth-child(even) td.col-salon {
+      background: #ffe4e8;
+    }
+
+    .check-yes { color: #22c55e; font-size: 16px; font-weight: 800; }
+    .check-no { color: #ef4444; font-size: 16px; font-weight: 800; }
+    .check-mid { color: #f59e0b; font-size: 16px; }
+
+    /* ======= PRICING ======= */
+    #pricing {
+      padding: 100px 0;
+      background: var(--gray-50);
+    }
+
+    #pricing .section-title,
+    #pricing .section-sub {
+      text-align: center;
+    }
+
+    #pricing .section-sub { margin: 0 auto; }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 56px;
+      align-items: start;
+    }
+
+    .pricing-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 36px 28px;
+      box-shadow: var(--shadow);
+      border: 2px solid var(--gray-200);
+      position: relative;
+      transition: transform 0.3s;
+    }
+
+    .pricing-card:hover { transform: translateY(-4px); }
+
+    .pricing-card.featured {
+      border-color: var(--rose);
+      box-shadow: 0 0 0 4px rgba(244,63,94,.08), var(--shadow-lg);
+      transform: scale(1.03);
+    }
+
+    .pricing-card.featured:hover { transform: scale(1.03) translateY(-4px); }
+
+    .pricing-badge {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, var(--rose) 0%, var(--rose-dark) 100%);
+      color: white;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 4px 18px;
+      border-radius: 99px;
+      white-space: nowrap;
+      box-shadow: 0 2px 10px rgba(244,63,94,.35);
+    }
+
+    .pricing-plan-name {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+
+    .pricing-plan-sub {
+      font-size: 13px;
+      color: var(--gray-400);
+      margin-bottom: 20px;
+    }
+
+    .pricing-price {
+      margin-bottom: 6px;
+    }
+
+    .pricing-price .amount {
+      font-size: 40px;
+      font-weight: 900;
+      color: var(--navy);
+      letter-spacing: -0.03em;
+    }
+
+    .pricing-price .currency {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--gray-500);
+      vertical-align: super;
+    }
+
+    .pricing-price .period {
+      font-size: 14px;
+      color: var(--gray-400);
+      font-weight: 500;
+    }
+
+    .pricing-divider {
+      height: 1px;
+      background: var(--gray-200);
+      margin: 20px 0;
+    }
+
+    .pricing-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .pricing-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--gray-600);
+    }
+
+    .pricing-features li .pf-icon {
+      color: var(--rose);
+      font-size: 16px;
+      font-weight: 800;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .btn-pricing {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 14px;
+      border-radius: 99px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-pricing-outline {
+      background: transparent;
+      color: var(--rose);
+      border: 2px solid var(--rose);
+    }
+
+    .btn-pricing-outline:hover {
+      background: var(--rose-light);
+    }
+
+    .btn-pricing-solid {
+      background: linear-gradient(135deg, var(--rose) 0%, var(--rose-dark) 100%);
+      color: white;
+      border: none;
+      box-shadow: 0 4px 16px rgba(244,63,94,.35);
+    }
+
+    .btn-pricing-solid:hover {
+      box-shadow: 0 8px 24px rgba(244,63,94,.45);
+    }
+
+    /* ======= TESTIMONIALS ======= */
+    #testimonials {
+      padding: 100px 0;
+      background: white;
+    }
+
+    #testimonials .section-title {
+      text-align: center;
+    }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 56px;
+    }
+
+    .testimonial-card {
+      background: var(--gray-50);
+      border-radius: var(--radius);
+      padding: 28px;
+      border: 1px solid var(--gray-200);
+      position: relative;
+    }
+
+    .testimonial-card::before {
+      content: '"';
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      font-size: 80px;
+      color: var(--rose-light);
+      font-family: Georgia, serif;
+      line-height: 1;
+    }
+
+    .stars {
+      display: flex;
+      gap: 2px;
+      margin-bottom: 14px;
+    }
+
+    .star {
+      color: #fbbf24;
+      font-size: 16px;
+    }
+
+    .star.empty { color: var(--gray-300); }
+
+    .testimonial-text {
+      font-size: 14px;
+      color: var(--gray-700);
+      line-height: 1.8;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-top: 16px;
+      border-top: 1px solid var(--gray-200);
+    }
+
+    .author-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 800;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .author-info { flex: 1; }
+
+    .author-name {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--navy);
+    }
+
+    .author-role {
+      font-size: 12px;
+      color: var(--gray-400);
+    }
+
+    .author-salon {
+      font-size: 12px;
+      color: var(--gray-500);
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    /* ======= FAQ ======= */
+    #faq {
+      padding: 100px 0;
+      background: var(--gray-50);
+    }
+
+    #faq .section-title,
+    #faq .section-sub {
+      text-align: center;
+    }
+
+    #faq .section-sub { margin: 0 auto; }
+
+    .faq-list {
+      max-width: 720px;
+      margin: 56px auto 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .faq-item {
+      background: white;
+      border-radius: var(--radius);
+      border: 1px solid var(--gray-200);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .faq-item summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--navy);
+      cursor: pointer;
+      list-style: none;
+      gap: 16px;
+      transition: background 0.2s;
+    }
+
+    .faq-item summary::-webkit-details-marker { display: none; }
+
+    .faq-item summary:hover { background: var(--gray-50); }
+
+    .faq-item[open] summary {
+      background: var(--rose-light);
+      color: var(--rose-dark);
+      border-bottom: 1px solid #fecdd3;
+    }
+
+    .faq-item summary::after {
+      content: '+';
+      font-size: 22px;
+      font-weight: 400;
+      color: var(--gray-400);
+      transition: transform 0.3s;
+      flex-shrink: 0;
+    }
+
+    .faq-item[open] summary::after {
+      transform: rotate(45deg);
+      color: var(--rose);
+    }
+
+    .faq-answer {
+      padding: 20px 24px;
+      font-size: 14px;
+      color: var(--gray-600);
+      line-height: 1.8;
+      border-top: 1px solid var(--gray-100);
+    }
+
+    /* ======= FINAL CTA ======= */
+    #cta {
+      padding: 100px 0;
+      background: linear-gradient(135deg, var(--rose) 0%, #fb7185 40%, var(--gold) 100%);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #cta::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    #cta .section-title {
+      color: white;
+      text-shadow: 0 2px 8px rgba(0,0,0,.1);
+    }
+
+    .cta-sub {
+      font-size: 18px;
+      color: rgba(255,255,255,.88);
+      margin-bottom: 40px;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.7;
+    }
+
+    /* ======= FOOTER ======= */
+    footer {
+      background: var(--navy);
+      padding: 56px 0 32px;
+    }
+
+    .footer-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+    }
+
+    .footer-logo {
+      font-size: 22px;
+      font-weight: 900;
+      color: white;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .footer-links a {
+      font-size: 14px;
+      color: rgba(255,255,255,.5);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: rgba(255,255,255,.85); }
+
+    .footer-copy {
+      font-size: 13px;
+      color: rgba(255,255,255,.3);
+    }
+
+    .footer-divider {
+      width: 100%;
+      height: 1px;
+      background: rgba(255,255,255,.07);
+    }
+
+    /* ======= RESPONSIVE ======= */
+    @media (max-width: 900px) {
+      .hero-inner { grid-template-columns: 1fr; }
+      .hero-mockup { display: none; }
+      .problem-grid { grid-template-columns: 1fr; }
+      .solution-inner { grid-template-columns: 1fr; }
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+      .pricing-grid { grid-template-columns: 1fr; }
+      .pricing-card.featured { transform: none; }
+      .testimonials-grid { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+    }
+
+    @media (max-width: 600px) {
+      .features-grid { grid-template-columns: 1fr; }
+      .hero-cta { flex-direction: column; }
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ======= NAVIGATION ======= -->
+<nav id="mainNav">
+  <div class="nav-inner">
+    <div class="nav-logo">✂ SalonOS</div>
+    <ul class="nav-links">
+      <li onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">機能</li>
+      <li onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">料金</li>
+      <li onclick="document.getElementById('faq').scrollIntoView({behavior:'smooth'})">よくある質問</li>
+    </ul>
+    <a href="#pricing" class="btn-nav">無料で始める</a>
+  </div>
+</nav>
+
+<!-- ======= HERO ======= -->
+<section id="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div class="hero-content reveal">
+        <div class="hero-badge">🌸 美容室専門のSaaS</div>
+        <h1 class="hero-h1">
+          <span class="gradient-text">HOT PEPPERに頼らない</span><br>
+          美容室経営、始めませんか。
+        </h1>
+        <p class="hero-sub">
+          LINE予約・顧客カルテ・売上管理が月額2,980円でひとつに。<br>
+          まず30件/月は完全無料でお試しください。
+        </p>
+        <div class="hero-cta">
+          <a href="#pricing" class="btn btn-primary">無料で始める →</a>
+          <a href="#" class="btn btn-outline" style="gap:8px;">
+            <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:var(--rose);border-radius:50%;color:white;font-size:10px;">▶</span>
+            デモ動画を見る
+          </a>
+        </div>
+        <div class="hero-trust">
+          <div class="trust-item">
+            <div class="trust-check">✓</div>
+            クレジットカード不要
+          </div>
+          <div class="trust-item">
+            <div class="trust-check">✓</div>
+            30件/月無料
+          </div>
+          <div class="trust-item">
+            <div class="trust-check">✓</div>
+            即日利用開始
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-mockup reveal" style="transition-delay:0.2s;">
+        <div class="browser-frame">
+          <div class="browser-bar">
+            <div class="browser-dot"></div>
+            <div class="browser-dot"></div>
+            <div class="browser-dot"></div>
+            <div class="browser-url">app.salonos.jp/dashboard</div>
+          </div>
+          <div class="dashboard-inner">
+            <div class="dash-header">
+              <div class="dash-title">ダッシュボード</div>
+              <div class="dash-date">2026年2月18日 (火)</div>
+            </div>
+            <div class="kpi-grid">
+              <div class="kpi-card">
+                <div class="kpi-label">今月の売上</div>
+                <div class="kpi-value rose">¥428,000</div>
+                <div class="kpi-change">▲ 12.3% 先月比</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-label">今月の来店数</div>
+                <div class="kpi-value">142<span style="font-size:12px;font-weight:500;color:var(--gray-400)">件</span></div>
+                <div class="kpi-change">▲ 8.1% 先月比</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-label">リピート率</div>
+                <div class="kpi-value gold">68<span style="font-size:14px">%</span></div>
+                <div class="kpi-change">▲ 3.2pt 先月比</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-label">未来店アラート</div>
+                <div class="kpi-value" style="color:#f59e0b;">9<span style="font-size:12px;font-weight:500;color:var(--gray-400)">件</span></div>
+                <div style="font-size:10px;color:var(--rose);font-weight:600;margin-top:2px;">要フォロー</div>
+              </div>
+            </div>
+            <div class="booking-list-title">本日の予約（5件）</div>
+            <div class="booking-item">
+              <div class="booking-avatar" style="background:#fda4af;color:#9f1239;">田</div>
+              <div class="booking-info">
+                <div class="booking-name">田中 みゆき 様</div>
+                <div class="booking-service">カラー + カット</div>
+              </div>
+              <div class="booking-time">10:00</div>
+              <div class="booking-status status-done">完了</div>
+            </div>
+            <div class="booking-item">
+              <div class="booking-avatar" style="background:#a5f3fc;color:#0e7490;">佐</div>
+              <div class="booking-info">
+                <div class="booking-name">佐藤 ゆかり 様</div>
+                <div class="booking-service">パーマ + トリートメント</div>
+              </div>
+              <div class="booking-time">13:00</div>
+              <div class="booking-status status-confirmed">確定</div>
+            </div>
+            <div class="booking-item">
+              <div class="booking-avatar" style="background:#bbf7d0;color:#15803d;">山</div>
+              <div class="booking-info">
+                <div class="booking-name">山本 けいこ 様</div>
+                <div class="booking-service">カット</div>
+              </div>
+              <div class="booking-time">15:30</div>
+              <div class="booking-status status-pending">調整中</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======= PROBLEM ======= -->
+<section id="problem">
+  <div class="container">
+    <div style="text-align:center;" class="reveal">
+      <span class="section-label">課題</span>
+      <h2 class="section-title" style="color:white;">美容室オーナーの、本当の悩みに<br>向き合いました。</h2>
+    </div>
+    <div class="problem-grid">
+      <div class="problem-card reveal">
+        <span class="problem-icon">💸</span>
+        <h3>HOT PEPPERへの手数料が毎月重くのしかかる</h3>
+        <p>掲載料＋成果報酬で年間30〜60万円。新規客は取れても、利益が残らない構造。集客を外部に依存し続ける限り、本当の意味での経営の自立はできません。</p>
+      </div>
+      <div class="problem-card reveal" style="transition-delay:0.15s;">
+        <span class="problem-icon">📱</span>
+        <h3>予約はLINE、カルテは紙、管理はExcel</h3>
+        <p>ツールがバラバラで、対応に追われる日々。スタッフへの引き継ぎも一苦労。お客様対応の時間が削られ、本来の施術に集中できない状況が続いています。</p>
+      </div>
+      <div class="problem-card reveal" style="transition-delay:0.3s;">
+        <span class="problem-icon">📊</span>
+        <h3>顧客データが自分のものにならない</h3>
+        <p>HOT PEPPERをやめたら、積み上げた顧客情報が消える。プラットフォーム依存の怖さ。長年かけて築いた関係性が、一瞬で失われるリスクを抱えています。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======= SOLUTION ======= -->
+<section id="solution">
+  <div class="container">
+    <div class="solution-inner">
+      <div class="reveal">
+        <span class="section-label">ソリューション</span>
+        <h2 class="section-title">SalonOSなら、<br>3つがひとつに。</h2>
+        <p class="section-sub">バラバラだったツールを統合し、オーナーが本来の仕事——お客様との時間——に集中できる環境をつくります。</p>
+        <div class="solution-points">
+          <div class="solution-point">
+            <div class="solution-point-icon">📅</div>
+            <div class="solution-point-text">
+              <h4>LINE予約を自動受付して、電話応対ゼロへ</h4>
+              <p>24時間いつでも予約受付。確認メッセージもリマインダーも自動で送信されます。</p>
+            </div>
+          </div>
+          <div class="solution-point">
+            <div class="solution-point-icon">📋</div>
+            <div class="solution-point-text">
+              <h4>顧客カルテ・薬剤レシピをクラウドで一元管理</h4>
+              <p>来店履歴・施術メモ・薬剤配合をひとつの画面で確認。スタッフ間の引き継ぎも瞬時に完了。</p>
+            </div>
+          </div>
+          <div class="solution-point">
+            <div class="solution-point-icon">🔔</div>
+            <div class="solution-point-text">
+              <h4>未来店アラートで、リピート率を自動改善</h4>
+              <p>3ヶ月来ていない顧客を自動検出して、LINEでフォローアップ。売上の底上げを仕組み化します。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal" style="transition-delay:0.2s;">
+        <div class="customer-card">
+          <div class="customer-card-header">
+            <div class="customer-avatar-large">田</div>
+            <div class="customer-meta">
+              <h3>田中 みゆき 様</h3>
+              <p>初回来店: 2023年4月 / 担当: 山田</p>
+              <div class="customer-tags">
+                <span class="customer-tag">VIP顧客</span>
+                <span class="customer-tag">カラー常連</span>
+              </div>
+            </div>
+          </div>
+          <div class="customer-card-body">
+            <div class="customer-section-title">来店サマリー</div>
+            <div class="customer-stats">
+              <div class="customer-stat">
+                <div class="customer-stat-val" style="color:var(--rose);">24</div>
+                <div class="customer-stat-label">来店回数</div>
+              </div>
+              <div class="customer-stat">
+                <div class="customer-stat-val" style="color:var(--gold);">¥9,800</div>
+                <div class="customer-stat-label">平均単価</div>
+              </div>
+              <div class="customer-stat">
+                <div class="customer-stat-val" style="color:#22c55e;">35</div>
+                <div class="customer-stat-label">来店周期(日)</div>
+              </div>
+            </div>
+            <div class="customer-section-title">前回の薬剤レシピ</div>
+            <div class="recipe-card">
+              <div class="recipe-label">カラー処方 — 2026/01/15</div>
+              <div class="recipe-row" style="margin-bottom:6px;">
+                <div class="recipe-swatch" style="background:#c9956b;"></div>
+                <div class="recipe-text">アッシュブラウン 8 + オキシ 4.5% × 60g</div>
+              </div>
+              <div class="recipe-row">
+                <div class="recipe-swatch" style="background:#e8c97e;"></div>
+                <div class="recipe-text">ゴールドハイライト 10 + 6% × 30g</div>
+              </div>
+            </div>
+            <div style="background:var(--rose-light);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:8px;">
+              <span style="font-size:16px;">🔔</span>
+              <span style="font-size:12px;color:var(--rose-dark);font-weight:700;">次回来店予定: 2026/03/01（残り11日）</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======= FEATURES ======= -->
+<section id="features">
+  <div class="container">
+    <div class="reveal" style="text-align:center;">
+      <span class="section-label">機能一覧</span>
+      <h2 class="section-title">必要な機能だけを、シンプルに。</h2>
+      <p class="section-sub">過不足なく、美容室経営に本当に必要な機能だけを凝縮しました。</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <span class="feature-icon">📅</span>
+        <h3>LINE予約連携</h3>
+        <p>LINEから24時間予約受付。確認・リマインドも自動送信。お客様の使い慣れたツールでスムーズな予約体験を提供します。</p>
+      </div>
+      <div class="feature-card reveal" style="transition-delay:0.1s;">
+        <span class="feature-icon">📋</span>
+        <h3>顧客カルテ</h3>
+        <p>来店履歴・施術内容・薬剤レシピをデジタル保存。いつでもどこからでも顧客情報にアクセスできます。</p>
+      </div>
+      <div class="feature-card reveal" style="transition-delay:0.2s;">
+        <span class="feature-icon">🎨</span>
+        <h3>薬剤レシピ記録</h3>
+        <p>カラー・パーマの薬剤配合をそのまま記録。次回施術がスムーズに進み、仕上がりのブレも防ぎます。</p>
+      </div>
+      <div class="feature-card reveal" style="transition-delay:0.1s;">
+        <span class="feature-icon">🔔</span>
+        <h3>未来店アラート</h3>
+        <p>3ヶ月来ていない顧客を自動検出。LINEでフォローアップして、リピーターをしっかりキープします。</p>
+      </div>
+      <div class="feature-card reveal" style="transition-delay:0.2s;">
+        <span class="feature-icon">📊</span>
+        <h3>売上ダッシュボード</h3>
+        <p>月次売上・来店数・リピート率をリアルタイム集計。数字で経営を把握し、次の施策を打ちやすくします。</p>
+      </div>
+      <div class="feature-card reveal" style="transition-delay:0.3s;">
+        <span class="feature-icon">🗓️</span>
+        <h3>週次カレンダー</h3>
+        <p>スタッフ別・日別の予約状況を一覧表示。ダブルブッキングを防ぎ、稼働率を最大化します。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======= COMPARISON ======= -->
+<section id="comparison">
+  <div class="container">
+    <div class="reveal" style="text-align:center;">
+      <span class="section-label">比較</span>
+      <h2 class="section-title">HOT PEPPER Beautyとの違い、<br>正直に比べます。</h2>
+      <p class="section-sub" style="margin:0 auto;">どちらが良い・悪いではなく、あなたのサロンに何が合うかで選んでください。</p>
+    </div>
+    <div class="comparison-table-wrap reveal" style="transition-delay:0.2s;">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th style="width:34%;">比較項目</th>
+            <th class="col-salon" style="width:33%;">✂ SalonOS</th>
+            <th style="width:33%;">HOT PEPPER Beauty</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>月額コスト</td>
+            <td class="col-salon"><strong>無料〜¥5,980</strong></td>
+            <td><span style="color:#ef4444;font-weight:700;">¥33,000〜</span> + 成果報酬</td>
+          </tr>
+          <tr>
+            <td>顧客データの所有</td>
+            <td class="col-salon"><span class="check-yes">✓</span> 完全自社所有</td>
+            <td><span class="check-no">✗</span> プラットフォーム依存</td>
+          </tr>
+          <tr>
+            <td>LINE予約連携</td>
+            <td class="col-salon"><span class="check-yes">✓</span> ネイティブ対応</td>
+            <td><span class="check-mid">△</span> 別途設定が必要</td>
+          </tr>
+          <tr>
+            <td>顧客カルテ管理</td>
+            <td class="col-salon"><span class="check-yes">✓</span> 詳細なカルテ</td>
+            <td><span class="check-mid">△</span> 基本情報のみ</td>
+          </tr>
+          <tr>
+            <td>薬剤レシピ記録</td>
+            <td class="col-salon"><span class="check-yes">✓</span> 対応</td>
+            <td><span class="check-no">✗</span> なし</td>
+          </tr>
+          <tr>
+            <td>新規集客</td>
+            <td class="col-salon"><span class="check-mid">△</span> 別途対応が必要</td>
+            <td><span class="check-yes">✓</span> 強力な集客力</td>
+          </tr>
+          <tr>
+            <td>解約の自由</td>
+            <td class="col-salon"><span class="check-yes">✓</span> いつでも即日</td>
+            <td><span class="check-mid">△</span> 違約金の場合あり</td>
+          </tr>
+          <tr>
+            <td>初期費用</td>
+            <td class="col-salon"><span class="check-yes">✓</span> ¥0</td>
+            <td><span class="check-yes">✓</span> ¥0〜</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ======= PRICING ======= -->
+<section id="pricing">
+  <div class="container">
+    <div class="reveal" style="text-align:center;">
+      <span class="section-label">料金プラン</span>
+      <h2 class="section-title">シンプルな料金、<br>隠れたコストはありません。</h2>
+      <p class="section-sub" style="margin:0 auto;">月払い・年払い自由、いつでも即日解約。リスクなく始められます。</p>
+    </div>
+    <div class="pricing-grid">
+      <!-- FREE -->
+      <div class="pricing-card reveal">
+        <div class="pricing-plan-name">Free</div>
+        <div class="pricing-plan-sub">まず使ってみたい方に</div>
+        <div class="pricing-price">
+          <span class="currency">¥</span>
+          <span class="amount">0</span>
+          <span class="period"> / 月</span>
+        </div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li><span class="pf-icon">✓</span><span>月30件まで予約管理</span></li>
+          <li><span class="pf-icon">✓</span><span>顧客カルテ基本機能</span></li>
+          <li><span class="pf-icon">✓</span><span>LINE通知（月10件まで）</span></li>
+          <li style="color:var(--gray-300);"><span class="pf-icon" style="color:var(--gray-300);">—</span><span>LINE予約連携</span></li>
+          <li style="color:var(--gray-300);"><span class="pf-icon" style="color:var(--gray-300);">—</span><span>未来店アラート</span></li>
+          <li style="color:var(--gray-300);"><span class="pf-icon" style="color:var(--gray-300);">—</span><span>売上ダッシュボード</span></li>
+        </ul>
+        <a href="#" class="btn-pricing btn-pricing-outline">無料で始める</a>
+      </div>
+
+      <!-- BASIC -->
+      <div class="pricing-card featured reveal" style="transition-delay:0.15s;">
+        <div class="pricing-badge">人気No.1</div>
+        <div class="pricing-plan-name">Basic</div>
+        <div class="pricing-plan-sub">HOT PEPPERを卒業したいオーナーに</div>
+        <div class="pricing-price">
+          <span class="currency">¥</span>
+          <span class="amount" style="color:var(--rose);">2,980</span>
+          <span class="period"> / 月</span>
+        </div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li><span class="pf-icon">✓</span><span>予約管理 <strong>無制限</strong></span></li>
+          <li><span class="pf-icon">✓</span><span>顧客カルテ <strong>無制限</strong></span></li>
+          <li><span class="pf-icon">✓</span><span>LINE予約連携</span></li>
+          <li><span class="pf-icon">✓</span><span>未来店アラート</span></li>
+          <li><span class="pf-icon">✓</span><span>売上ダッシュボード</span></li>
+          <li><span class="pf-icon">✓</span><span>薬剤レシピ記録</span></li>
+        </ul>
+        <a href="#" class="btn-pricing btn-pricing-solid">無料で始める</a>
+      </div>
+
+      <!-- PRO -->
+      <div class="pricing-card reveal" style="transition-delay:0.3s;">
+        <div class="pricing-plan-name">Pro</div>
+        <div class="pricing-plan-sub">複数スタッフのサロンに</div>
+        <div class="pricing-price">
+          <span class="currency">¥</span>
+          <span class="amount">5,980</span>
+          <span class="period"> / 月</span>
+        </div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li><span class="pf-icon">✓</span><span>Basicの全機能</span></li>
+          <li><span class="pf-icon">✓</span><span>スタッフ複数アカウント（5名まで）</span></li>
+          <li><span class="pf-icon">✓</span><span>優先サポート</span></li>
+          <li><span class="pf-icon">✓</span><span>データエクスポート</span></li>
+          <li><span class="pf-icon">✓</span><span>週次カレンダー（スタッフ別）</span></li>
+          <li><span class="pf-icon">✓</span><span>高度な売上レポート</span></li>
+        </ul>
+        <a href="#" class="btn-pricing btn-pricing-outline">無料で始める</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======= TESTIMONIALS ======= -->
+<section id="testimonials">
+  <div class="container">
+    <div class="reveal" style="text-align:center;">
+      <span class="section-label">お客様の声</span>
+      <h2 class="section-title">使ってくださっているオーナーの声</h2>
+    </div>
+    <div class="testimonials-grid">
+      <!-- 1 -->
+      <div class="testimonial-card reveal">
+        <div class="stars">
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+        </div>
+        <p class="testimonial-text">HOT PEPPERをやめて半年。最初は不安でしたが、LINEで予約が入るたびに通知が来て、むしろ楽になりました。月3万円以上のコストが消えたのが一番大きいです。</p>
+        <div class="testimonial-author">
+          <div class="author-avatar" style="background:linear-gradient(135deg,#f43f5e,#fb7185);">田</div>
+          <div class="author-info">
+            <div class="author-name">田中 みゆき</div>
+            <div class="author-role">オーナー</div>
+            <div class="author-salon">Hair Studio MOon（東京・世田谷）</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2 -->
+      <div class="testimonial-card reveal" style="transition-delay:0.15s;">
+        <div class="stars">
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+        </div>
+        <p class="testimonial-text">カルテを紙で管理していたころは、前回の薬剤が見つからなくて焦ることが何度もありました。SalonOSにしてから、顧客詳細を開けば全部出てくるので本当に助かっています。</p>
+        <div class="testimonial-author">
+          <div class="author-avatar" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa);">佐</div>
+          <div class="author-info">
+            <div class="author-name">佐藤 ゆかり</div>
+            <div class="author-role">一人サロンオーナー</div>
+            <div class="author-salon">Atelier Yucca（大阪・堀江）</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3 -->
+      <div class="testimonial-card reveal" style="transition-delay:0.3s;">
+        <div class="stars">
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star empty">★</span>
+        </div>
+        <p class="testimonial-text">3ヶ月来ていない顧客に自動でLINEが送れる機能が気に入っています。送るだけで予約が入ることがあって、地味に売上が上がりました。</p>
+        <div class="testimonial-author">
+          <div class="author-avatar" style="background:linear-gradient(135deg,#d4af37,#fbbf24);">山</div>
+          <div class="author-info">
+            <div class="author-name">山本 けいこ</div>
+            <div class="author-role">代表</div>
+            <div class="author-salon">BLOOM Hair（名古屋・栄）</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======= FAQ ======= -->
+<section id="faq">
+  <div class="container">
+    <div class="reveal" style="text-align:center;">
+      <span class="section-label">よくある質問</span>
+      <h2 class="section-title">よくある質問</h2>
+      <p class="section-sub" style="margin:0 auto;">不安なことがあれば、X（Twitter）またはLINEで直接お聞かせください。</p>
+    </div>
+    <div class="faq-list">
+      <details class="faq-item reveal">
+        <summary>無料プランでどこまで使えますか？</summary>
+        <div class="faq-answer">月30件までの予約管理と顧客カルテの基本機能をご利用いただけます。まずは無料でお試しいただき、物足りなくなったタイミングでアップグレードいただく流れをおすすめしています。</div>
+      </details>
+      <details class="faq-item reveal" style="transition-delay:0.05s;">
+        <summary>HOT PEPPER Beautyからの移行は難しいですか？</summary>
+        <div class="faq-answer">SalonOSへの登録は5分以内に完了します。HOT PEPPERと並行して使い始め、お客様が増えてきたタイミングで移行するオーナーさんが多いです。移行サポートも個別にご相談いただけます。</div>
+      </details>
+      <details class="faq-item reveal" style="transition-delay:0.1s;">
+        <summary>LINEとの連携はどうやって設定しますか？</summary>
+        <div class="faq-answer">LINE公式アカウントをお持ちであれば、管理画面から3クリックで連携できます。LINE公式アカウントの取得もご案内します。設定につまずいた場合は直接サポートいたします。</div>
+      </details>
+      <details class="faq-item reveal" style="transition-delay:0.15s;">
+        <summary>顧客データのセキュリティは大丈夫ですか？</summary>
+        <div class="faq-answer">データはSSL暗号化通信で保護されており、定期バックアップも実施しています。個人情報はGDPRおよび個人情報保護法に準拠した形で管理します。</div>
+      </details>
+      <details class="faq-item reveal" style="transition-delay:0.2s;">
+        <summary>解約はいつでもできますか？</summary>
+        <div class="faq-answer">はい、いつでも即日解約が可能です。違約金・解約手数料は一切かかりません。解約後もデータのエクスポートは30日間可能です。</div>
+      </details>
+      <details class="faq-item reveal" style="transition-delay:0.25s;">
+        <summary>開発者に直接聞けますか？</summary>
+        <div class="faq-answer">はい！現在は個人開発のため、X（Twitter）またはLINEで直接ご連絡いただけます。機能のご要望も大歓迎です。できる限り迅速にお返事します。</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ======= FINAL CTA ======= -->
+<section id="cta">
+  <div class="container">
+    <div class="reveal" style="position:relative;z-index:1;">
+      <h2 class="section-title" style="margin-bottom:20px;">今日から、美容室経営を<br>自分の手に。</h2>
+      <p class="cta-sub">30件/月は完全無料。クレジットカード不要でいますぐ始められます。</p>
+      <a href="#pricing" class="btn btn-white">無料アカウントを作成する →</a>
+      <div style="margin-top:24px;display:flex;justify-content:center;gap:24px;flex-wrap:wrap;">
+        <div class="trust-item" style="color:rgba(255,255,255,.8);">
+          <div class="trust-check" style="background:rgba(255,255,255,.25);border:2px solid rgba(255,255,255,.5);">✓</div>
+          クレジットカード不要
+        </div>
+        <div class="trust-item" style="color:rgba(255,255,255,.8);">
+          <div class="trust-check" style="background:rgba(255,255,255,.25);border:2px solid rgba(255,255,255,.5);">✓</div>
+          30件/月無料
+        </div>
+        <div class="trust-item" style="color:rgba(255,255,255,.8);">
+          <div class="trust-check" style="background:rgba(255,255,255,.25);border:2px solid rgba(255,255,255,.5);">✓</div>
+          即日利用開始
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======= FOOTER ======= -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-logo">✂ SalonOS</div>
+      <nav class="footer-links">
+        <a href="#features">機能</a>
+        <a href="#pricing">料金</a>
+        <a href="#faq">FAQ</a>
+        <a href="#">プライバシーポリシー</a>
+        <a href="#">お問い合わせ</a>
+      </nav>
+      <div class="footer-divider"></div>
+      <p class="footer-copy">© 2026 SalonOS. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ======= JAVASCRIPT ======= -->
+<script>
+  // 1. Nav scroll detection
+  const nav = document.getElementById('mainNav');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 40) {
+      nav.classList.add('nav-scrolled');
+    } else {
+      nav.classList.remove('nav-scrolled');
+    }
+  });
+
+  // 2. IntersectionObserver for .reveal elements
+  const reveals = document.querySelectorAll('.reveal');
+  const revealObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+  );
+  reveals.forEach(el => revealObserver.observe(el));
+
+  // 3. Smooth scroll for all anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        const offset = 80;
+        const top = target.getBoundingClientRect().top + window.scrollY - offset;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
+    });
+  });
+
+  // 4. Animate KPI numbers on hero visible
+  function animateNumber(el, target, prefix, suffix, duration) {
+    let start = 0;
+    const step = (timestamp) => {
+      if (!start) start = timestamp;
+      const progress = Math.min((timestamp - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = Math.floor(eased * target);
+      el.textContent = prefix + current.toLocaleString() + suffix;
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  // Trigger animation when hero is visible
+  const heroObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        setTimeout(() => animateNumber(document.querySelector('.kpi-value.rose'), 428000, '¥', '', 1200), 400);
+        heroObserver.disconnect();
+      }
+    });
+  }, { threshold: 0.3 });
+
+  const heroEl = document.getElementById('hero');
+  if (heroEl) heroObserver.observe(heroEl);
+</script>
+</body>
+</html>

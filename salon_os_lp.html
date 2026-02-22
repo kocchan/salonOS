@@ -1,0 +1,2896 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SalonOS - 美容室専用SaaS | LINE予約・顧客カルテ・売上管理</title>
+<style>
+/* ============================================================
+   SalonOS LP Design System
+   Target: 40代女性オーナー向け 信頼感×使いやすさ
+   Tone: Notion / Linear / Stripe ベース × 日本美容業界
+   Breakpoints: 1200px+ / 768-1199px / ~767px
+   ============================================================ */
+
+/* ===== RESET & BASE ===== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+/* ===== DESIGN TOKENS ===== */
+:root {
+  /* --- Color Palette --- */
+  --rose:        #f43f5e;
+  --rose-dark:   #e11d48;
+  --rose-light:  #fff1f2;
+  --gold:        #d4af37;
+  --gold-light:  #fdf8e7;
+  --navy:        #0f172a;
+  --navy-light:  #1e293b;
+  --gray-50:     #f8fafc;
+  --gray-100:    #f1f5f9;
+  --gray-200:    #e2e8f0;
+  --gray-400:    #94a3b8;
+  --gray-600:    #475569;
+  --gray-800:    #1e293b;
+  --white:       #ffffff;
+
+  /* --- Typography --- */
+  --font-sans: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN',
+               'Noto Sans JP', 'Yu Gothic', sans-serif;
+  --font-size-xs:   0.75rem;   /* 12px */
+  --font-size-sm:   0.875rem;  /* 14px */
+  --font-size-base: 1rem;      /* 16px */
+  --font-size-lg:   1.125rem;  /* 18px */
+  --font-size-xl:   1.25rem;   /* 20px */
+  --font-size-2xl:  1.5rem;    /* 24px */
+  --font-size-3xl:  1.875rem;  /* 30px */
+  --font-size-4xl:  2.25rem;   /* 36px */
+  --font-size-5xl:  3rem;      /* 48px */
+  --font-size-6xl:  3.75rem;   /* 60px */
+
+  /* --- Spacing --- */
+  --space-1:  0.25rem;
+  --space-2:  0.5rem;
+  --space-3:  0.75rem;
+  --space-4:  1rem;
+  --space-5:  1.25rem;
+  --space-6:  1.5rem;
+  --space-8:  2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+
+  /* --- Border Radius --- */
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  16px;
+  --radius-xl:  24px;
+  --radius-2xl: 32px;
+  --radius-full: 9999px;
+
+  /* --- Shadows --- */
+  --shadow-sm:  0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+  --shadow-md:  0 4px 16px rgba(0,0,0,.10);
+  --shadow-lg:  0 8px 32px rgba(0,0,0,.12);
+  --shadow-xl:  0 16px 48px rgba(0,0,0,.15);
+  --shadow-rose: 0 8px 25px rgba(244,63,94,.30);
+  --shadow-gold: 0 8px 25px rgba(212,175,55,.30);
+
+  /* --- Transitions --- */
+  --transition-fast:   150ms ease;
+  --transition-base:   250ms ease;
+  --transition-slow:   400ms ease;
+
+  /* --- Layout --- */
+  --container-max: 1200px;
+  --nav-height: 72px;
+}
+
+/* ===== BASE STYLES ===== */
+body {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base);
+  line-height: 1.7;
+  color: var(--navy);
+  background: var(--white);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img { max-width: 100%; display: block; }
+a { text-decoration: none; color: inherit; }
+ul, ol { list-style: none; }
+button { cursor: pointer; border: none; background: none; font-family: inherit; }
+
+/* ===== LAYOUT UTILITIES ===== */
+.container {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--space-8);
+}
+
+.section {
+  padding: var(--space-24) 0;
+}
+
+/* ===== TYPOGRAPHY UTILITIES ===== */
+.section-eyebrow {
+  display: inline-block;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rose);
+  margin-bottom: var(--space-4);
+}
+
+.section-title {
+  font-size: var(--font-size-4xl);
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--navy);
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-5);
+}
+
+.section-subtitle {
+  font-size: var(--font-size-lg);
+  color: var(--gray-600);
+  line-height: 1.8;
+  max-width: 600px;
+}
+
+.text-center { text-align: center; }
+.text-center .section-subtitle { margin: 0 auto; }
+
+/* ===== GRADIENT TEXT ===== */
+.gradient-text {
+  background: linear-gradient(135deg, var(--rose) 0%, var(--gold) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  line-height: 1;
+  transition: transform var(--transition-base),
+              box-shadow var(--transition-base),
+              background var(--transition-base);
+  white-space: nowrap;
+}
+
+/* Primary: Rose */
+.btn-primary {
+  background: linear-gradient(135deg, var(--rose) 0%, var(--rose-dark) 100%);
+  color: var(--white);
+  box-shadow: 0 4px 14px rgba(244,63,94,.25);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-rose);
+}
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Secondary: Outline */
+.btn-secondary {
+  background: var(--white);
+  color: var(--navy);
+  border: 1.5px solid var(--gray-200);
+  box-shadow: var(--shadow-sm);
+}
+.btn-secondary:hover {
+  border-color: var(--rose);
+  color: var(--rose);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Ghost White: for dark backgrounds */
+.btn-ghost-white {
+  background: rgba(255,255,255,.15);
+  color: var(--white);
+  border: 1.5px solid rgba(255,255,255,.4);
+  backdrop-filter: blur(4px);
+}
+.btn-ghost-white:hover {
+  background: rgba(255,255,255,.25);
+  transform: translateY(-2px);
+}
+
+/* White filled: for gradient CTA section */
+.btn-white {
+  background: var(--white);
+  color: var(--rose);
+  font-weight: 700;
+  box-shadow: 0 4px 20px rgba(0,0,0,.15);
+}
+.btn-white:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,0,0,.20);
+}
+
+/* Size variants */
+.btn-lg {
+  padding: var(--space-4) var(--space-8);
+  font-size: var(--font-size-lg);
+}
+.btn-sm {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-size-sm);
+}
+
+/* ===== BADGE ===== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  line-height: 1;
+}
+.badge-rose {
+  background: var(--rose-light);
+  color: var(--rose-dark);
+  border: 1px solid rgba(244,63,94,.2);
+}
+.badge-popular {
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark));
+  color: var(--white);
+  font-size: var(--font-size-xs);
+  padding: 4px 12px;
+}
+
+/* ===== SCROLL REVEAL ANIMATION ===== */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+.reveal-delay-5 { transition-delay: 0.5s; }
+
+/* ============================================================
+   1. NAVIGATION BAR
+   ============================================================ */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: var(--nav-height);
+  background: transparent;
+  transition: background var(--transition-base),
+              box-shadow var(--transition-base),
+              backdrop-filter var(--transition-base);
+}
+
+/* スクロール後のスタイル（JS で .scrolled クラスを付与） */
+.navbar.scrolled {
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 1px 0 rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+}
+
+.navbar__inner {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--space-8);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+
+/* Logo */
+.navbar__logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+.navbar__logo-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--rose) 0%, var(--rose-dark) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 4px 12px rgba(244,63,94,.30);
+}
+.navbar__logo-text {
+  font-size: var(--font-size-xl);
+  font-weight: 800;
+  color: var(--navy);
+  letter-spacing: -0.03em;
+}
+.navbar__logo-text span {
+  color: var(--rose);
+}
+
+/* Nav Links */
+.navbar__links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex: 1;
+  justify-content: center;
+}
+.navbar__link {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--gray-600);
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast),
+              background var(--transition-fast);
+}
+.navbar__link:hover {
+  color: var(--navy);
+  background: var(--gray-100);
+}
+
+/* Nav Actions */
+.navbar__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+.navbar__login {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--gray-600);
+  transition: color var(--transition-fast);
+}
+.navbar__login:hover { color: var(--navy); }
+
+/* Hamburger (mobile) */
+.navbar__hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 36px;
+  height: 36px;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+.navbar__hamburger:hover { background: var(--gray-100); }
+.navbar__hamburger span {
+  display: block;
+  height: 2px;
+  background: var(--navy);
+  border-radius: 2px;
+  transition: transform var(--transition-base), opacity var(--transition-base);
+}
+
+/* Mobile Nav Menu */
+.navbar__mobile-menu {
+  display: none;
+  position: fixed;
+  top: var(--nav-height);
+  left: 0;
+  right: 0;
+  background: rgba(255,255,255,.97);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--gray-200);
+  padding: var(--space-4) var(--space-6) var(--space-6);
+  flex-direction: column;
+  gap: var(--space-2);
+  z-index: 99;
+  box-shadow: var(--shadow-lg);
+}
+.navbar__mobile-menu.open { display: flex; }
+.navbar__mobile-link {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  color: var(--gray-800);
+  border-radius: var(--radius-md);
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.navbar__mobile-link:hover { background: var(--gray-100); color: var(--rose); }
+.navbar__mobile-cta {
+  margin-top: var(--space-2);
+  text-align: center;
+}
+
+/* ============================================================
+   2. HERO SECTION
+   ============================================================ */
+.hero {
+  position: relative;
+  min-height: calc(100vh - var(--nav-height));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-20) 0 var(--space-16);
+  overflow: hidden;
+}
+
+/* ドットグリッドパターン背景 */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(244,63,94,.10) 1px, transparent 1px),
+    radial-gradient(circle, rgba(212,175,55,.06) 1px, transparent 1px);
+  background-size: 32px 32px, 64px 64px;
+  background-position: 0 0, 16px 16px;
+  pointer-events: none;
+}
+
+/* ソフトグロー */
+.hero::after {
+  content: '';
+  position: absolute;
+  top: -20%;
+  right: -10%;
+  width: 60%;
+  height: 80%;
+  background: radial-gradient(ellipse, rgba(244,63,94,.08) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+.hero__inner {
+  position: relative;
+  z-index: 1;
+}
+
+.hero__content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-16);
+  align-items: center;
+}
+
+.hero__left {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* ヒーローバッジ */
+.hero__badge {
+  align-self: flex-start;
+}
+
+/* ヒーロー見出し */
+.hero__title {
+  font-size: var(--font-size-5xl);
+  font-weight: 900;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: var(--navy);
+}
+.hero__title .gradient-text {
+  display: block;
+}
+
+/* ヒーロー本文 */
+.hero__body {
+  font-size: var(--font-size-xl);
+  color: var(--gray-600);
+  line-height: 1.75;
+  max-width: 480px;
+}
+.hero__body strong {
+  color: var(--navy);
+  font-weight: 700;
+}
+
+/* CTAボタン群 */
+.hero__cta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+/* トラストリスト */
+.hero__trust {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+  padding-top: var(--space-2);
+}
+.hero__trust-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--gray-600);
+}
+.hero__trust-item::before {
+  content: '✓';
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark));
+  color: var(--white);
+  border-radius: var(--radius-full);
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ===== ブラウザモックアップ ===== */
+.hero__mockup {
+  position: relative;
+}
+
+.browser-mockup {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,.06),
+    0 24px 64px rgba(0,0,0,.14),
+    0 8px 24px rgba(244,63,94,.08);
+  overflow: hidden;
+  transform: perspective(1000px) rotateY(-4deg) rotateX(2deg);
+  transition: transform var(--transition-slow);
+}
+.browser-mockup:hover {
+  transform: perspective(1000px) rotateY(-1deg) rotateX(0deg);
+}
+
+/* ブラウザ上部バー */
+.browser-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 12px 16px;
+  background: var(--gray-100);
+  border-bottom: 1px solid var(--gray-200);
+}
+.browser-dots {
+  display: flex;
+  gap: 6px;
+}
+.browser-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-full);
+}
+.browser-dot--red   { background: #ff5f56; }
+.browser-dot--yellow{ background: #ffbd2e; }
+.browser-dot--green { background: #27c93f; }
+.browser-url {
+  flex: 1;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-full);
+  padding: 5px 14px;
+  font-size: var(--font-size-xs);
+  color: var(--gray-400);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.browser-url-lock { font-size: 10px; color: var(--gray-400); }
+
+/* ダッシュボードモックアップ内容 */
+.dashboard-mock {
+  padding: 20px;
+  background: var(--gray-50);
+  min-height: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ダッシュボード: KPIカード行 */
+.mock-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.mock-kpi-card {
+  background: var(--white);
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.07);
+}
+.mock-kpi-label {
+  font-size: 10px;
+  color: var(--gray-400);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.mock-kpi-value {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--navy);
+  line-height: 1;
+}
+.mock-kpi-value.rose { color: var(--rose); }
+.mock-kpi-value.gold { color: var(--gold); }
+.mock-kpi-sub {
+  font-size: 9px;
+  color: var(--gray-400);
+  margin-top: 4px;
+}
+
+/* ダッシュボード: コンテンツ行 */
+.mock-content-row {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 12px;
+  flex: 1;
+}
+
+/* チャートモック */
+.mock-chart {
+  background: var(--white);
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.07);
+}
+.mock-chart-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 10px;
+}
+.mock-chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 80px;
+  padding-top: 8px;
+}
+.mock-bar {
+  flex: 1;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(to top, var(--rose-dark), var(--rose));
+  opacity: 0.85;
+  min-height: 8px;
+}
+.mock-bar:nth-child(3n+1) { background: linear-gradient(to top, var(--gold), #e6c84a); }
+
+/* 予約リストモック */
+.mock-booking-list {
+  background: var(--white);
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.07);
+  overflow: hidden;
+}
+.mock-booking-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 8px;
+}
+.mock-booking-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--gray-100);
+}
+.mock-booking-item:last-child { border-bottom: none; }
+.mock-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--rose), var(--gold));
+  flex-shrink: 0;
+  font-size: 9px;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+.mock-booking-info {
+  flex: 1;
+  min-width: 0;
+}
+.mock-booking-name {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--navy);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mock-booking-service {
+  font-size: 9px;
+  color: var(--gray-400);
+}
+.mock-booking-time {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--rose);
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   3. PAIN SECTION（課題提示）
+   ============================================================ */
+.pain {
+  background: var(--navy);
+  padding: var(--space-24) 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 微細テクスチャ背景 */
+.pain::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,.03) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
+}
+
+.pain__inner { position: relative; z-index: 1; }
+
+.pain__header {
+  text-align: center;
+  margin-bottom: var(--space-16);
+}
+.pain__eyebrow {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--rose);
+  text-transform: uppercase;
+  margin-bottom: var(--space-4);
+}
+.pain__title {
+  font-size: var(--font-size-4xl);
+  font-weight: 800;
+  color: var(--white);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+.pain__title em {
+  font-style: normal;
+  color: var(--rose);
+}
+
+/* Pain カードグリッド */
+.pain__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
+}
+
+.pain-card {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  transition: background var(--transition-base),
+              border-color var(--transition-base),
+              transform var(--transition-base);
+}
+.pain-card:hover {
+  background: rgba(255,255,255,.07);
+  border-color: rgba(244,63,94,.30);
+  transform: translateY(-4px);
+}
+
+.pain-card__icon {
+  font-size: 2.5rem;
+  margin-bottom: var(--space-5);
+  display: block;
+  filter: grayscale(20%);
+}
+
+.pain-card__title {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: var(--space-3);
+  line-height: 1.4;
+}
+.pain-card__title em {
+  color: var(--rose);
+  font-style: normal;
+}
+
+.pain-card__body {
+  font-size: var(--font-size-sm);
+  color: rgba(255,255,255,.55);
+  line-height: 1.8;
+}
+
+/* ============================================================
+   4. SOLUTION SECTION
+   ============================================================ */
+.solution {
+  background: var(--white);
+  padding: var(--space-24) 0;
+}
+
+.solution__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-20);
+  align-items: center;
+}
+
+.solution__left {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* グラデーションアクセントライン */
+.solution__accent-line {
+  width: 56px;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, var(--rose), var(--gold));
+}
+
+.solution__points {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.solution__point {
+  display: flex;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  transition: background var(--transition-fast);
+}
+.solution__point:hover { background: var(--gray-50); }
+
+.solution__point-icon {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  background: var(--rose-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.solution__point-text h4 {
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: var(--space-1);
+}
+.solution__point-text p {
+  font-size: var(--font-size-sm);
+  color: var(--gray-600);
+  line-height: 1.7;
+}
+
+/* Solution UI モックアップ（CSS純粋描画） */
+.solution__right {}
+
+.app-window {
+  background: var(--white);
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+  position: relative;
+}
+
+/* 左ボーダーグラデーション装飾 */
+.app-window::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--rose), var(--gold));
+}
+
+.app-window__header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--gray-100);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.app-window__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy);
+}
+.app-window__status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #22c55e;
+  font-weight: 600;
+}
+.app-window__status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-full);
+  background: #22c55e;
+  animation: pulse-green 2s ease infinite;
+}
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,.4); }
+  50%       { box-shadow: 0 0 0 4px rgba(34,197,94,.0); }
+}
+
+.app-window__body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+
+/* カレンダービュー */
+.mini-calendar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mini-calendar__header {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gray-600);
+  display: flex;
+  justify-content: space-between;
+}
+.mini-calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.mini-cal-day {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  background: var(--gray-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--gray-600);
+}
+.mini-cal-day.booked {
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark));
+  color: var(--white);
+  font-weight: 700;
+}
+.mini-cal-day.partial {
+  background: var(--rose-light);
+  color: var(--rose-dark);
+  font-weight: 600;
+}
+.mini-cal-day.today {
+  background: var(--gold);
+  color: var(--white);
+  font-weight: 700;
+}
+
+/* LINE通知モック */
+.line-notification {
+  background: linear-gradient(135deg, #06c755 0%, #04a844 100%);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.line-icon {
+  width: 28px;
+  height: 28px;
+  background: rgba(255,255,255,.2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.line-text {
+  flex: 1;
+}
+.line-text-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--white);
+}
+.line-text-body {
+  font-size: 9px;
+  color: rgba(255,255,255,.8);
+  margin-top: 2px;
+}
+.line-badge {
+  background: #ff4444;
+  color: var(--white);
+  font-size: 9px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+/* 売上ミニグラフ */
+.mini-revenue {
+  background: var(--gray-50);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+}
+.mini-revenue__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 10px;
+}
+.mini-revenue__label { font-size: 10px; color: var(--gray-600); font-weight: 500; }
+.mini-revenue__value { font-size: 16px; font-weight: 800; color: var(--navy); }
+.mini-revenue__trend { font-size: 9px; font-weight: 700; color: #22c55e; }
+.mini-sparkline {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 32px;
+}
+.sparkbar {
+  flex: 1;
+  border-radius: 2px 2px 0 0;
+  background: linear-gradient(to top, var(--rose-dark), var(--rose));
+  opacity: 0.7;
+  min-height: 4px;
+}
+
+/* ============================================================
+   5. FEATURES SECTION
+   ============================================================ */
+.features {
+  background: var(--gray-50);
+  padding: var(--space-24) 0;
+}
+
+.features__header {
+  text-align: center;
+  margin-bottom: var(--space-16);
+}
+
+/* 2×3 グリッド */
+.features__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
+}
+
+.feature-card {
+  background: var(--white);
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  transition: border-color var(--transition-base),
+              box-shadow var(--transition-base),
+              transform var(--transition-base);
+}
+.feature-card:hover {
+  border-color: var(--rose);
+  box-shadow: 0 0 0 3px var(--rose-light), var(--shadow-md);
+  transform: translateY(-4px);
+}
+
+.feature-card__icon {
+  font-size: 2.2rem;
+  margin-bottom: var(--space-4);
+  display: block;
+}
+
+.feature-card__title {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: var(--space-2);
+  line-height: 1.4;
+}
+
+.feature-card__body {
+  font-size: var(--font-size-sm);
+  color: var(--gray-600);
+  line-height: 1.8;
+}
+
+/* ============================================================
+   6. COMPARISON TABLE SECTION
+   ============================================================ */
+.comparison {
+  background: var(--white);
+  padding: var(--space-24) 0;
+}
+
+.comparison__header {
+  text-align: center;
+  margin-bottom: var(--space-16);
+}
+
+.comparison__wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  border: 1.5px solid var(--gray-200);
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 640px;
+}
+
+/* ヘッダー行 */
+.comparison-table thead th {
+  padding: var(--space-6);
+  text-align: center;
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  border-bottom: 1.5px solid var(--gray-200);
+  background: var(--gray-50);
+}
+.comparison-table thead th:first-child {
+  text-align: left;
+  background: var(--gray-50);
+}
+
+/* SalonOS カラム強調 */
+.col-salonos {
+  background: var(--rose-light) !important;
+  position: relative;
+}
+.col-salonos-header {
+  background: var(--rose-light) !important;
+  color: var(--rose-dark) !important;
+}
+.col-salonos-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--rose), var(--rose-dark));
+}
+
+/* テーブル行 */
+.comparison-table tbody tr {
+  border-bottom: 1px solid var(--gray-100);
+  transition: background var(--transition-fast);
+}
+.comparison-table tbody tr:last-child { border-bottom: none; }
+.comparison-table tbody tr:hover td { background: var(--gray-50); }
+.comparison-table tbody tr:hover .col-salonos { background: #fde8ec !important; }
+
+.comparison-table td {
+  padding: var(--space-4) var(--space-6);
+  text-align: center;
+  font-size: var(--font-size-sm);
+  vertical-align: middle;
+}
+.comparison-table td:first-child {
+  text-align: left;
+  font-weight: 500;
+  color: var(--gray-800);
+}
+
+/* チェック・バツアイコン */
+.check-yes {
+  color: var(--rose);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.check-yes::before { content: '✓'; }
+
+.check-no {
+  color: var(--gray-400);
+  font-size: 0.9rem;
+}
+.check-no::before { content: '✗'; }
+
+.check-partial {
+  color: var(--gold);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.check-partial::before { content: '△'; }
+
+.price-cell {
+  font-weight: 700;
+  font-size: var(--font-size-base);
+  color: var(--navy);
+}
+.price-cell.rose-text { color: var(--rose-dark); }
+
+/* ============================================================
+   7. PRICING SECTION
+   ============================================================ */
+.pricing {
+  background: var(--gray-50);
+  padding: var(--space-24) 0;
+}
+
+.pricing__header {
+  text-align: center;
+  margin-bottom: var(--space-16);
+}
+
+.pricing__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
+  align-items: stretch;
+}
+
+.pricing-card {
+  background: var(--white);
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+  position: relative;
+}
+.pricing-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+}
+
+/* 中央 Basic プランを強調 */
+.pricing-card--featured {
+  border: 2.5px solid var(--rose);
+  box-shadow: 0 0 0 4px var(--rose-light), var(--shadow-lg);
+  transform: translateY(-8px) scale(1.02);
+}
+.pricing-card--featured:hover {
+  transform: translateY(-12px) scale(1.02);
+  box-shadow: 0 0 0 4px var(--rose-light), var(--shadow-xl);
+}
+
+/* 人気バッジ */
+.pricing-card__popular-badge {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.pricing-card__header {}
+
+.pricing-card__plan {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--gray-400);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-2);
+}
+.pricing-card--featured .pricing-card__plan { color: var(--rose); }
+
+.pricing-card__price {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+}
+.pricing-card__amount {
+  font-size: var(--font-size-5xl);
+  font-weight: 900;
+  color: var(--navy);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.pricing-card--featured .pricing-card__amount { color: var(--rose-dark); }
+.pricing-card__currency {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--gray-600);
+  align-self: flex-start;
+  margin-top: 6px;
+}
+.pricing-card__unit {
+  font-size: var(--font-size-sm);
+  color: var(--gray-400);
+}
+
+.pricing-card__desc {
+  font-size: var(--font-size-sm);
+  color: var(--gray-600);
+  line-height: 1.7;
+}
+
+/* 機能リスト */
+.pricing-card__features {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.pricing-feature {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--font-size-sm);
+  color: var(--gray-600);
+}
+.pricing-feature::before {
+  content: '✓';
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-full);
+  background: var(--gray-100);
+  color: var(--gray-400);
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.pricing-feature--active { color: var(--navy); font-weight: 500; }
+.pricing-feature--active::before {
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark));
+  color: var(--white);
+}
+
+.pricing-card__cta { margin-top: auto; }
+
+/* ============================================================
+   8. TESTIMONIALS SECTION（口コミ）
+   ============================================================ */
+.testimonials {
+  background: var(--white);
+  padding: var(--space-24) 0;
+}
+
+.testimonials__header {
+  text-align: center;
+  margin-bottom: var(--space-16);
+}
+
+.testimonials__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
+}
+
+.testimonial-card {
+  background: var(--white);
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
+  position: relative;
+}
+.testimonial-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+}
+
+/* 引用符アイコン */
+.testimonial-card__quote-icon {
+  position: absolute;
+  top: var(--space-5);
+  right: var(--space-6);
+  font-size: 3.5rem;
+  line-height: 1;
+  color: var(--rose-light);
+  font-family: Georgia, serif;
+  font-weight: 900;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* 星評価 */
+.testimonial-stars {
+  display: flex;
+  gap: 3px;
+}
+.testimonial-star {
+  color: var(--gold);
+  font-size: 0.9rem;
+}
+
+.testimonial-card__body {
+  font-size: var(--font-size-base);
+  color: var(--gray-600);
+  line-height: 1.85;
+  position: relative;
+  z-index: 1;
+}
+
+/* アバターエリア */
+.testimonial-card__footer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  border-top: 1px solid var(--gray-100);
+  padding-top: var(--space-5);
+}
+
+.testimonial-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--rose) 0%, var(--gold) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: var(--white);
+  flex-shrink: 0;
+}
+
+.testimonial-card__author-name {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--navy);
+}
+.testimonial-card__author-role {
+  font-size: var(--font-size-xs);
+  color: var(--gray-400);
+  margin-top: 2px;
+}
+
+/* ============================================================
+   9. FAQ SECTION
+   ============================================================ */
+.faq {
+  background: var(--gray-50);
+  padding: var(--space-24) 0;
+}
+
+.faq__header {
+  text-align: center;
+  margin-bottom: var(--space-16);
+}
+
+.faq__list {
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* details/summary アコーディオン（JS不要） */
+.faq-item {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--gray-200);
+  border-left: 4px solid var(--rose);
+  overflow: hidden;
+  transition: box-shadow var(--transition-base);
+}
+.faq-item:hover { box-shadow: var(--shadow-md); }
+.faq-item[open] {
+  box-shadow: var(--shadow-md);
+  border-left-color: var(--rose);
+}
+
+.faq-item summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-5) var(--space-6);
+  cursor: pointer;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--navy);
+  list-style: none;
+  user-select: none;
+  gap: var(--space-4);
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+
+/* 矢印アイコン */
+.faq-item summary::after {
+  content: '+';
+  font-size: 1.4rem;
+  font-weight: 300;
+  color: var(--rose);
+  flex-shrink: 0;
+  transition: transform var(--transition-base);
+  line-height: 1;
+}
+.faq-item[open] summary::after {
+  content: '−';
+}
+
+.faq-item__body {
+  padding: 0 var(--space-6) var(--space-5);
+  font-size: var(--font-size-sm);
+  color: var(--gray-600);
+  line-height: 1.85;
+  border-top: 1px solid var(--gray-100);
+  padding-top: var(--space-4);
+}
+
+/* ============================================================
+   10. FOOTER CTA SECTION
+   ============================================================ */
+.footer-cta {
+  background: linear-gradient(135deg, var(--rose) 0%, #e11d48 40%, var(--gold) 100%);
+  padding: var(--space-24) 0;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 装飾オーバーレイ */
+.footer-cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 30% 50%, rgba(255,255,255,.12) 0%, transparent 50%),
+                    radial-gradient(circle at 70% 50%, rgba(255,255,255,.08) 0%, transparent 50%);
+  pointer-events: none;
+}
+.footer-cta::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
+}
+
+.footer-cta__inner {
+  position: relative;
+  z-index: 1;
+}
+
+.footer-cta__label {
+  display: inline-block;
+  padding: var(--space-2) var(--space-5);
+  background: rgba(255,255,255,.2);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: var(--space-6);
+  letter-spacing: 0.05em;
+}
+
+.footer-cta__title {
+  font-size: var(--font-size-5xl);
+  font-weight: 900;
+  color: var(--white);
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  margin-bottom: var(--space-5);
+}
+
+.footer-cta__subtitle {
+  font-size: var(--font-size-xl);
+  color: rgba(255,255,255,.85);
+  max-width: 520px;
+  margin: 0 auto var(--space-10);
+  line-height: 1.75;
+}
+
+.footer-cta__buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+
+.footer-cta__trust {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+}
+.footer-cta__trust-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: rgba(255,255,255,.80);
+}
+.footer-cta__trust-item::before {
+  content: '✓';
+  font-weight: 700;
+  color: rgba(255,255,255,.9);
+}
+
+/* ============================================================
+   11. FOOTER
+   ============================================================ */
+.footer {
+  background: var(--navy);
+  padding: var(--space-16) 0 var(--space-8);
+}
+
+.footer__top {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: var(--space-12);
+  padding-bottom: var(--space-12);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  margin-bottom: var(--space-8);
+}
+
+.footer__brand {}
+
+.footer__brand-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+.footer__brand-logo-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+.footer__brand-logo-text {
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  color: var(--white);
+  letter-spacing: -0.03em;
+}
+.footer__brand-logo-text span { color: var(--rose); }
+
+.footer__brand-desc {
+  font-size: var(--font-size-sm);
+  color: rgba(255,255,255,.45);
+  line-height: 1.8;
+  max-width: 280px;
+}
+
+.footer__col-title {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.35);
+  margin-bottom: var(--space-4);
+}
+
+.footer__links {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.footer__link {
+  font-size: var(--font-size-sm);
+  color: rgba(255,255,255,.55);
+  transition: color var(--transition-fast);
+}
+.footer__link:hover { color: var(--white); }
+
+/* フッター下部 */
+.footer__bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.footer__copy {
+  font-size: var(--font-size-xs);
+  color: rgba(255,255,255,.30);
+}
+
+.footer__legal-links {
+  display: flex;
+  gap: var(--space-5);
+}
+.footer__legal-link {
+  font-size: var(--font-size-xs);
+  color: rgba(255,255,255,.30);
+  transition: color var(--transition-fast);
+}
+.footer__legal-link:hover { color: rgba(255,255,255,.70); }
+
+/* ============================================================
+   RESPONSIVE STYLES
+   ============================================================ */
+
+/* ===== TABLET: 768px ~ 1199px ===== */
+@media (max-width: 1199px) {
+  :root {
+    --container-max: 100%;
+  }
+
+  .container { padding: 0 var(--space-6); }
+
+  /* Hero */
+  .hero__content {
+    grid-template-columns: 1fr;
+    gap: var(--space-12);
+  }
+  .hero__title { font-size: var(--font-size-4xl); }
+  .browser-mockup { transform: none; }
+
+  /* Pain */
+  .pain__grid { gap: var(--space-4); }
+
+  /* Solution */
+  .solution__grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-12);
+  }
+
+  /* Features */
+  .features__grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Comparison */
+  .comparison__wrap { border-radius: var(--radius-lg); }
+
+  /* Pricing */
+  .pricing__grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-5);
+  }
+  .pricing-card--featured { transform: none; }
+  .pricing__grid > :last-child {
+    grid-column: 1 / -1;
+    max-width: 480px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  /* Testimonials */
+  .testimonials__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .testimonials__grid > :last-child { grid-column: 1 / -1; }
+
+  /* Footer */
+  .footer__top {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-8);
+  }
+}
+
+/* ===== MOBILE: ~ 767px ===== */
+@media (max-width: 767px) {
+  :root {
+    --space-24: 4rem;
+    --space-20: 3rem;
+    --space-16: 2.5rem;
+  }
+
+  .container { padding: 0 var(--space-4); }
+
+  .section { padding: var(--space-16) 0; }
+
+  /* Typography */
+  .section-title { font-size: var(--font-size-3xl); }
+  .section-subtitle { font-size: var(--font-size-base); }
+
+  /* Navbar */
+  .navbar__links  { display: none; }
+  .navbar__login  { display: none; }
+  .navbar__actions .btn { display: none; }
+  .navbar__hamburger { display: flex; }
+
+  /* Hero */
+  .hero { padding: var(--space-12) 0; min-height: auto; }
+  .hero__title { font-size: var(--font-size-3xl); }
+  .hero__body { font-size: var(--font-size-base); }
+  .hero__cta { flex-direction: column; align-items: flex-start; }
+  .hero__cta .btn { width: 100%; justify-content: center; }
+  .hero__trust { gap: var(--space-3); }
+
+  /* KPI グリッド: モバイル 2列 */
+  .mock-kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .mock-content-row { grid-template-columns: 1fr; }
+
+  /* Pain */
+  .pain__grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+  .pain__title { font-size: var(--font-size-3xl); }
+
+  /* Features */
+  .features__grid { grid-template-columns: 1fr; }
+
+  /* Pricing */
+  .pricing__grid {
+    grid-template-columns: 1fr;
+  }
+  .pricing__grid > :last-child {
+    grid-column: auto;
+    max-width: none;
+    margin: 0;
+  }
+  .pricing-card--featured { transform: none; }
+
+  /* Testimonials */
+  .testimonials__grid {
+    grid-template-columns: 1fr;
+  }
+  .testimonials__grid > :last-child { grid-column: auto; }
+
+  /* Footer CTA */
+  .footer-cta__title { font-size: var(--font-size-3xl); }
+  .footer-cta__buttons { flex-direction: column; align-items: center; }
+  .footer-cta__buttons .btn { width: 100%; max-width: 320px; justify-content: center; }
+
+  /* Footer */
+  .footer__top { grid-template-columns: 1fr 1fr; gap: var(--space-6); }
+  .footer__bottom { flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 479px) {
+  .footer__top { grid-template-columns: 1fr; }
+  .hero__trust { flex-direction: column; gap: var(--space-2); }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     NAVIGATION BAR
+     ============================================================ -->
+<nav class="navbar" id="navbar" role="navigation" aria-label="メインナビゲーション">
+  <div class="navbar__inner">
+
+    <!-- Logo -->
+    <a href="#" class="navbar__logo" aria-label="SalonOS トップへ">
+      <div class="navbar__logo-mark" aria-hidden="true">✂</div>
+      <span class="navbar__logo-text">Salon<span>OS</span></span>
+    </a>
+
+    <!-- Desktop Links -->
+    <ul class="navbar__links" role="list">
+      <li><a href="#features" class="navbar__link">機能</a></li>
+      <li><a href="#comparison" class="navbar__link">比較</a></li>
+      <li><a href="#pricing" class="navbar__link">料金</a></li>
+      <li><a href="#testimonials" class="navbar__link">口コミ</a></li>
+      <li><a href="#faq" class="navbar__link">よくある質問</a></li>
+    </ul>
+
+    <!-- Desktop Actions -->
+    <div class="navbar__actions">
+      <a href="#" class="navbar__login">ログイン</a>
+      <a href="#pricing" class="btn btn-primary btn-sm">無料で始める</a>
+    </div>
+
+    <!-- Hamburger (mobile) -->
+    <button class="navbar__hamburger" id="hamburger"
+            aria-label="メニューを開く" aria-expanded="false" aria-controls="mobile-menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile Menu -->
+<div class="navbar__mobile-menu" id="mobile-menu" role="dialog" aria-label="モバイルメニュー">
+  <a href="#features"     class="navbar__mobile-link">機能</a>
+  <a href="#comparison"   class="navbar__mobile-link">比較</a>
+  <a href="#pricing"      class="navbar__mobile-link">料金</a>
+  <a href="#testimonials" class="navbar__mobile-link">口コミ</a>
+  <a href="#faq"          class="navbar__mobile-link">よくある質問</a>
+  <div class="navbar__mobile-cta">
+    <a href="#pricing" class="btn btn-primary" style="width:100%;justify-content:center;">無料で始める →</a>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     HERO SECTION
+     ============================================================ -->
+<section class="hero" id="hero" aria-label="ヒーロー">
+  <div class="container hero__inner">
+    <div class="hero__content">
+
+      <!-- Left: Copy -->
+      <div class="hero__left">
+        <div class="hero__badge reveal">
+          <span class="badge badge-rose">🌸 美容室専用SaaS No.1</span>
+        </div>
+
+        <h1 class="hero__title reveal reveal-delay-1">
+          HOT PEPPERに<br>頼らない
+          <span class="gradient-text">美容室経営、</span>
+          始めませんか。
+        </h1>
+
+        <p class="hero__body reveal reveal-delay-2">
+          LINE予約・顧客カルテ・売上管理が<br>
+          <strong>月額2,980円</strong>でひとつに。<br>
+          導入サロン <strong>3,200店舗突破。</strong>
+        </p>
+
+        <div class="hero__cta reveal reveal-delay-3">
+          <a href="#pricing" class="btn btn-primary btn-lg">
+            無料で始める
+            <span aria-hidden="true">→</span>
+          </a>
+          <a href="#features" class="btn btn-secondary btn-lg">
+            <span aria-hidden="true">▶</span>
+            デモを見る
+          </a>
+        </div>
+
+        <ul class="hero__trust reveal reveal-delay-4" role="list">
+          <li class="hero__trust-item">クレカ不要</li>
+          <li class="hero__trust-item">30件/月 無料</li>
+          <li class="hero__trust-item">即日開始</li>
+          <li class="hero__trust-item">解約いつでも</li>
+        </ul>
+      </div>
+
+      <!-- Right: Browser Mockup -->
+      <div class="hero__mockup reveal reveal-delay-2">
+        <div class="browser-mockup">
+          <!-- ブラウザ上部バー -->
+          <div class="browser-bar">
+            <div class="browser-dots" aria-hidden="true">
+              <span class="browser-dot browser-dot--red"></span>
+              <span class="browser-dot browser-dot--yellow"></span>
+              <span class="browser-dot browser-dot--green"></span>
+            </div>
+            <div class="browser-url" aria-hidden="true">
+              <span class="browser-url-lock">🔒</span>
+              app.salon-os.jp/dashboard
+            </div>
+          </div>
+
+          <!-- ダッシュボードモック -->
+          <div class="dashboard-mock" aria-label="SalonOSダッシュボードのデモ画像">
+            <!-- KPI カード -->
+            <div class="mock-kpi-row" aria-hidden="true">
+              <div class="mock-kpi-card">
+                <div class="mock-kpi-label">今月の予約</div>
+                <div class="mock-kpi-value rose">142</div>
+                <div class="mock-kpi-sub">+18% 先月比</div>
+              </div>
+              <div class="mock-kpi-card">
+                <div class="mock-kpi-label">売上</div>
+                <div class="mock-kpi-value">¥892k</div>
+                <div class="mock-kpi-sub">+12% 先月比</div>
+              </div>
+              <div class="mock-kpi-card">
+                <div class="mock-kpi-label">新規顧客</div>
+                <div class="mock-kpi-value gold">34</div>
+                <div class="mock-kpi-sub">今月</div>
+              </div>
+              <div class="mock-kpi-card">
+                <div class="mock-kpi-label">顧客満足度</div>
+                <div class="mock-kpi-value rose">4.9</div>
+                <div class="mock-kpi-sub">★★★★★</div>
+              </div>
+            </div>
+
+            <!-- グラフ + 予約リスト -->
+            <div class="mock-content-row" aria-hidden="true">
+              <div class="mock-chart">
+                <div class="mock-chart-title">売上推移（過去7日）</div>
+                <div class="mock-chart-bars">
+                  <div class="mock-bar" style="height:45%"></div>
+                  <div class="mock-bar" style="height:60%"></div>
+                  <div class="mock-bar" style="height:40%"></div>
+                  <div class="mock-bar" style="height:75%"></div>
+                  <div class="mock-bar" style="height:55%"></div>
+                  <div class="mock-bar" style="height:90%"></div>
+                  <div class="mock-bar" style="height:70%"></div>
+                </div>
+              </div>
+              <div class="mock-booking-list">
+                <div class="mock-booking-title">本日の予約</div>
+                <div class="mock-booking-item">
+                  <div class="mock-avatar">田</div>
+                  <div class="mock-booking-info">
+                    <div class="mock-booking-name">田中 美咲</div>
+                    <div class="mock-booking-service">カット + カラー</div>
+                  </div>
+                  <div class="mock-booking-time">10:00</div>
+                </div>
+                <div class="mock-booking-item">
+                  <div class="mock-avatar">佐</div>
+                  <div class="mock-booking-info">
+                    <div class="mock-booking-name">佐藤 陽子</div>
+                    <div class="mock-booking-service">縮毛矯正</div>
+                  </div>
+                  <div class="mock-booking-time">11:30</div>
+                </div>
+                <div class="mock-booking-item">
+                  <div class="mock-avatar">山</div>
+                  <div class="mock-booking-info">
+                    <div class="mock-booking-name">山本 花子</div>
+                    <div class="mock-booking-service">カット</div>
+                  </div>
+                  <div class="mock-booking-time">13:00</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PAIN SECTION（課題提示）
+     ============================================================ -->
+<section class="pain section" id="pain" aria-label="課題提示">
+  <div class="container pain__inner">
+
+    <header class="pain__header reveal">
+      <p class="pain__eyebrow">Pain Points</p>
+      <h2 class="pain__title">
+        心当たり<em>ありませんか</em>？
+      </h2>
+    </header>
+
+    <div class="pain__grid">
+      <article class="pain-card reveal reveal-delay-1">
+        <span class="pain-card__icon" aria-hidden="true">💸</span>
+        <h3 class="pain-card__title">
+          HOT PEPPERへの<em>手数料</em>が<br>利益を圧迫している
+        </h3>
+        <p class="pain-card__body">
+          売上の20〜30%が手数料として消えていく。努力して稼いだ売上が
+          どんどん減っていく感覚、もう限界ではないですか？
+        </p>
+      </article>
+
+      <article class="pain-card reveal reveal-delay-2">
+        <span class="pain-card__icon" aria-hidden="true">📋</span>
+        <h3 class="pain-card__title">
+          顧客カルテが<em>紙とアプリで</em><br>バラバラで管理できない
+        </h3>
+        <p class="pain-card__body">
+          手書きのカルテ、スマホのメモ、Excelの予約表…。
+          情報が散らばって、前回の施術内容がすぐ確認できない。
+        </p>
+      </article>
+
+      <article class="pain-card reveal reveal-delay-3">
+        <span class="pain-card__icon" aria-hidden="true">😓</span>
+        <h3 class="pain-card__title">
+          電話対応に<em>追われて</em><br>施術に集中できない
+        </h3>
+        <p class="pain-card__body">
+          施術中に予約電話が鳴る、折り返しを忘れる、
+          ダブルブッキング…。本来の仕事に集中したいのに。
+        </p>
+      </article>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SOLUTION SECTION
+     ============================================================ -->
+<section class="solution section" id="solution" aria-label="ソリューション">
+  <div class="container">
+    <div class="solution__grid">
+
+      <!-- Left: テキスト -->
+      <div class="solution__left">
+        <p class="section-eyebrow reveal">Solution</p>
+        <div class="solution__accent-line reveal"></div>
+        <h2 class="section-title reveal">
+          すべてを<span class="gradient-text">ひとつに。</span><br>
+          SalonOSがすべて<br>解決します。
+        </h2>
+        <p class="section-subtitle reveal">
+          予約・顧客管理・売上分析を一元化。
+          複数のツールを行き来する手間をゼロに。
+          オーナーさんが本当にやりたいことに集中できます。
+        </p>
+
+        <ul class="solution__points reveal">
+          <li class="solution__point">
+            <div class="solution__point-icon" aria-hidden="true">📱</div>
+            <div class="solution__point-text">
+              <h4>LINE公式アカウント連携</h4>
+              <p>お客様がLINEから直接予約。電話対応ゼロ、24時間自動受付で機会損失なし。</p>
+            </div>
+          </li>
+          <li class="solution__point">
+            <div class="solution__point-icon" aria-hidden="true">📖</div>
+            <div class="solution__point-text">
+              <h4>デジタル顧客カルテ</h4>
+              <p>来店履歴・施術記録・写真・アレルギー情報を一元管理。1秒で検索できます。</p>
+            </div>
+          </li>
+          <li class="solution__point">
+            <div class="solution__point-icon" aria-hidden="true">📊</div>
+            <div class="solution__point-text">
+              <h4>リアルタイム売上ダッシュボード</h4>
+              <p>日次・月次・スタッフ別の売上を自動集計。数字で経営判断を。</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Right: App Window Mock -->
+      <div class="solution__right reveal reveal-delay-2">
+        <div class="app-window">
+          <div class="app-window__header">
+            <span class="app-window__title">📅 予約管理 - 2025年6月</span>
+            <span class="app-window__status">
+              <span class="app-window__status-dot"></span>
+              リアルタイム同期中
+            </span>
+          </div>
+          <div class="app-window__body">
+            <!-- ミニカレンダー -->
+            <div class="mini-calendar">
+              <div class="mini-calendar__header">
+                <span>6月</span><span>← 5月 | 7月 →</span>
+              </div>
+              <div class="mini-calendar__grid">
+                <div class="mini-cal-day">日</div>
+                <div class="mini-cal-day">月</div>
+                <div class="mini-cal-day">火</div>
+                <div class="mini-cal-day">水</div>
+                <div class="mini-cal-day">木</div>
+                <div class="mini-cal-day">金</div>
+                <div class="mini-cal-day">土</div>
+                <div class="mini-cal-day">1</div>
+                <div class="mini-cal-day partial">2</div>
+                <div class="mini-cal-day booked">3</div>
+                <div class="mini-cal-day booked">4</div>
+                <div class="mini-cal-day booked">5</div>
+                <div class="mini-cal-day partial">6</div>
+                <div class="mini-cal-day">7</div>
+                <div class="mini-cal-day partial">8</div>
+                <div class="mini-cal-day booked">9</div>
+                <div class="mini-cal-day today">10</div>
+                <div class="mini-cal-day booked">11</div>
+                <div class="mini-cal-day booked">12</div>
+                <div class="mini-cal-day partial">13</div>
+                <div class="mini-cal-day">14</div>
+              </div>
+            </div>
+
+            <!-- LINE通知 -->
+            <div class="line-notification">
+              <div class="line-icon">💬</div>
+              <div class="line-text">
+                <div class="line-text-title">LINE予約 新着</div>
+                <div class="line-text-body">鈴木様「明日13時カット希望です」</div>
+              </div>
+              <div class="line-badge">3</div>
+            </div>
+
+            <!-- 売上ミニグラフ -->
+            <div class="mini-revenue">
+              <div class="mini-revenue__header">
+                <span class="mini-revenue__label">今月の売上</span>
+                <span class="mini-revenue__trend">▲ 12.4%</span>
+              </div>
+              <div class="mini-revenue__value">¥892,400</div>
+              <div class="mini-sparkline">
+                <div class="sparkbar" style="height:40%"></div>
+                <div class="sparkbar" style="height:60%"></div>
+                <div class="sparkbar" style="height:45%"></div>
+                <div class="sparkbar" style="height:70%"></div>
+                <div class="sparkbar" style="height:55%"></div>
+                <div class="sparkbar" style="height:85%"></div>
+                <div class="sparkbar" style="height:95%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     FEATURES SECTION（機能一覧）
+     ============================================================ -->
+<section class="features section" id="features" aria-label="機能一覧">
+  <div class="container">
+    <header class="features__header">
+      <p class="section-eyebrow reveal">Features</p>
+      <h2 class="section-title reveal">美容室に必要な機能が<br><span class="gradient-text">すべて揃っています</span></h2>
+      <p class="section-subtitle reveal">個人サロンから複数店舗展開まで、成長ステージに合わせてお使いいただけます。</p>
+    </header>
+
+    <div class="features__grid">
+      <article class="feature-card reveal reveal-delay-1">
+        <span class="feature-card__icon" aria-hidden="true">📱</span>
+        <h3 class="feature-card__title">LINE予約システム</h3>
+        <p class="feature-card__body">
+          LINE公式アカウントと連携し、24時間自動で予約受付。
+          自動リマインドでキャンセル率を最大60%削減します。
+        </p>
+      </article>
+
+      <article class="feature-card reveal reveal-delay-2">
+        <span class="feature-card__icon" aria-hidden="true">📖</span>
+        <h3 class="feature-card__title">デジタルカルテ</h3>
+        <p class="feature-card__body">
+          施術履歴・写真・アレルギー情報・好みを一括管理。
+          指名スタッフが変わっても安心のサービスを提供できます。
+        </p>
+      </article>
+
+      <article class="feature-card reveal reveal-delay-3">
+        <span class="feature-card__icon" aria-hidden="true">💰</span>
+        <h3 class="feature-card__title">売上・在庫管理</h3>
+        <p class="feature-card__body">
+          日次・月次・スタッフ別の売上を自動集計。
+          薬剤・商材の在庫も管理でき、仕入れタイミングを逃しません。
+        </p>
+      </article>
+
+      <article class="feature-card reveal reveal-delay-1">
+        <span class="feature-card__icon" aria-hidden="true">🔔</span>
+        <h3 class="feature-card__title">リマインド・フォロー</h3>
+        <p class="feature-card__body">
+          予約前日のリマインド、来店後のサンクスメッセージを自動送信。
+          再来店率の向上に直結します。
+        </p>
+      </article>
+
+      <article class="feature-card reveal reveal-delay-2">
+        <span class="feature-card__icon" aria-hidden="true">⭐</span>
+        <h3 class="feature-card__title">口コミ・評価管理</h3>
+        <p class="feature-card__body">
+          来店後にLINEで口コミ依頼を自動送信。
+          Googleマップ評価の向上をサポートし、新規集客力を高めます。
+        </p>
+      </article>
+
+      <article class="feature-card reveal reveal-delay-3">
+        <span class="feature-card__icon" aria-hidden="true">📊</span>
+        <h3 class="feature-card__title">経営レポート</h3>
+        <p class="feature-card__body">
+          売上・客単価・リピート率など経営に必要な数字を自動集計。
+          毎月のレポートをメールで受け取れます。
+        </p>
+      </article>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     COMPARISON TABLE
+     ============================================================ -->
+<section class="comparison section" id="comparison" aria-label="他社比較">
+  <div class="container">
+    <header class="comparison__header">
+      <p class="section-eyebrow reveal">Comparison</p>
+      <h2 class="section-title reveal">SalonOSが<span class="gradient-text">選ばれる理由</span></h2>
+      <p class="section-subtitle reveal" style="margin:0 auto;">他のサービスと比べてみてください。</p>
+    </header>
+
+    <div class="comparison__wrap reveal">
+      <table class="comparison-table" aria-label="SalonOSと競合サービスの比較表">
+        <thead>
+          <tr>
+            <th scope="col">機能・条件</th>
+            <th scope="col" class="col-salonos-header">SalonOS<br><small style="font-weight:400;font-size:.75rem;color:var(--rose)">おすすめ</small></th>
+            <th scope="col">HOT PEPPER<br><small style="font-weight:400;font-size:.75rem;color:var(--gray-400)">Beauty</small></th>
+            <th scope="col">一般予約<br><small style="font-weight:400;font-size:.75rem;color:var(--gray-400)">アプリ</small></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>月額費用</td>
+            <td class="col-salonos price-cell rose-text">¥2,980〜</td>
+            <td class="price-cell">¥30,000〜</td>
+            <td class="price-cell">¥5,000〜</td>
+          </tr>
+          <tr>
+            <td>LINE予約連携</td>
+            <td class="col-salonos"><span class="check-yes" aria-label="対応"></span></td>
+            <td><span class="check-no"  aria-label="非対応"></span></td>
+            <td><span class="check-partial" aria-label="一部対応"></span></td>
+          </tr>
+          <tr>
+            <td>顧客カルテ管理</td>
+            <td class="col-salonos"><span class="check-yes" aria-label="対応"></span></td>
+            <td><span class="check-partial" aria-label="一部対応"></span></td>
+            <td><span class="check-no"  aria-label="非対応"></span></td>
+          </tr>
+          <tr>
+            <td>売上レポート</td>
+            <td class="col-salonos"><span class="check-yes" aria-label="対応"></span></td>
+            <td><span class="check-partial" aria-label="一部対応"></span></td>
+            <td><span class="check-partial" aria-label="一部対応"></span></td>
+          </tr>
+          <tr>
+            <td>自動リマインド</td>
+            <td class="col-salonos"><span class="check-yes" aria-label="対応"></span></td>
+            <td><span class="check-no"  aria-label="非対応"></span></td>
+            <td><span class="check-yes" aria-label="対応"></span></td>
+          </tr>
+          <tr>
+            <td>掲載手数料</td>
+            <td class="col-salonos price-cell rose-text">なし</td>
+            <td class="price-cell">売上の20〜30%</td>
+            <td class="price-cell">なし</td>
+          </tr>
+          <tr>
+            <td>無料プラン</td>
+            <td class="col-salonos"><span class="check-yes" aria-label="対応"></span></td>
+            <td><span class="check-no"  aria-label="非対応"></span></td>
+            <td><span class="check-partial" aria-label="一部対応"></span></td>
+          </tr>
+          <tr>
+            <td>日本語サポート</td>
+            <td class="col-salonos"><span class="check-yes" aria-label="対応"></span></td>
+            <td><span class="check-yes" aria-label="対応"></span></td>
+            <td><span class="check-partial" aria-label="一部対応"></span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PRICING SECTION（料金）
+     ============================================================ -->
+<section class="pricing section" id="pricing" aria-label="料金プラン">
+  <div class="container">
+    <header class="pricing__header">
+      <p class="section-eyebrow reveal">Pricing</p>
+      <h2 class="section-title reveal">シンプルな<span class="gradient-text">料金プラン</span></h2>
+      <p class="section-subtitle reveal" style="margin:0 auto;">
+        すべてのプランで14日間無料トライアル。解約はいつでも可能です。
+      </p>
+    </header>
+
+    <div class="pricing__grid">
+
+      <!-- Starter -->
+      <div class="pricing-card reveal reveal-delay-1">
+        <div class="pricing-card__header">
+          <p class="pricing-card__plan">Starter</p>
+          <div class="pricing-card__price">
+            <span class="pricing-card__currency">¥</span>
+            <span class="pricing-card__amount">0</span>
+            <span class="pricing-card__unit">/月</span>
+          </div>
+          <p class="pricing-card__desc">はじめての方に。30件/月まで無料で全機能をお試しいただけます。</p>
+        </div>
+        <ul class="pricing-card__features">
+          <li class="pricing-feature pricing-feature--active">予約管理（30件/月）</li>
+          <li class="pricing-feature pricing-feature--active">顧客カルテ（50名まで）</li>
+          <li class="pricing-feature pricing-feature--active">売上レポート（基本）</li>
+          <li class="pricing-feature">LINE連携</li>
+          <li class="pricing-feature">自動リマインド</li>
+          <li class="pricing-feature">在庫管理</li>
+        </ul>
+        <div class="pricing-card__cta">
+          <a href="#" class="btn btn-secondary" style="width:100%;justify-content:center;">
+            無料で始める
+          </a>
+        </div>
+      </div>
+
+      <!-- Basic（強調） -->
+      <div class="pricing-card pricing-card--featured reveal reveal-delay-2">
+        <div class="pricing-card__popular-badge">
+          <span class="badge badge-popular">🌸 人気No.1</span>
+        </div>
+        <div class="pricing-card__header">
+          <p class="pricing-card__plan">Basic</p>
+          <div class="pricing-card__price">
+            <span class="pricing-card__currency">¥</span>
+            <span class="pricing-card__amount">2,980</span>
+            <span class="pricing-card__unit">/月</span>
+          </div>
+          <p class="pricing-card__desc">個人〜3名サロンに最適。ほとんどのオーナー様がこちらを選んでいます。</p>
+        </div>
+        <ul class="pricing-card__features">
+          <li class="pricing-feature pricing-feature--active">予約管理（無制限）</li>
+          <li class="pricing-feature pricing-feature--active">顧客カルテ（無制限）</li>
+          <li class="pricing-feature pricing-feature--active">売上レポート（詳細）</li>
+          <li class="pricing-feature pricing-feature--active">LINE連携</li>
+          <li class="pricing-feature pricing-feature--active">自動リマインド</li>
+          <li class="pricing-feature pricing-feature--active">在庫管理</li>
+        </ul>
+        <div class="pricing-card__cta">
+          <a href="#" class="btn btn-primary" style="width:100%;justify-content:center;">
+            14日間無料で試す →
+          </a>
+        </div>
+      </div>
+
+      <!-- Pro -->
+      <div class="pricing-card reveal reveal-delay-3">
+        <div class="pricing-card__header">
+          <p class="pricing-card__plan">Pro</p>
+          <div class="pricing-card__price">
+            <span class="pricing-card__currency">¥</span>
+            <span class="pricing-card__amount">7,980</span>
+            <span class="pricing-card__unit">/月</span>
+          </div>
+          <p class="pricing-card__desc">複数スタッフ・多店舗展開を考えているサロン向け。</p>
+        </div>
+        <ul class="pricing-card__features">
+          <li class="pricing-feature pricing-feature--active">Basicの全機能</li>
+          <li class="pricing-feature pricing-feature--active">スタッフ管理（10名）</li>
+          <li class="pricing-feature pricing-feature--active">多店舗管理（3店舗）</li>
+          <li class="pricing-feature pricing-feature--active">カスタムリポート</li>
+          <li class="pricing-feature pricing-feature--active">優先サポート</li>
+          <li class="pricing-feature pricing-feature--active">API連携</li>
+        </ul>
+        <div class="pricing-card__cta">
+          <a href="#" class="btn btn-secondary" style="width:100%;justify-content:center;">
+            14日間無料で試す
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     TESTIMONIALS SECTION（口コミ）
+     ============================================================ -->
+<section class="testimonials section" id="testimonials" aria-label="お客様の声">
+  <div class="container">
+    <header class="testimonials__header">
+      <p class="section-eyebrow reveal">Testimonials</p>
+      <h2 class="section-title reveal">オーナーさんの<span class="gradient-text">リアルな声</span></h2>
+      <p class="section-subtitle reveal" style="margin:0 auto;">全国3,200店舗のオーナーさんに愛用されています。</p>
+    </header>
+
+    <div class="testimonials__grid">
+
+      <article class="testimonial-card reveal reveal-delay-1">
+        <div class="testimonial-card__quote-icon" aria-hidden="true">"</div>
+        <div class="testimonial-stars" aria-label="5つ星評価">
+          <span class="testimonial-star" aria-hidden="true">★</span>
+          <span class="testimonial-star" aria-hidden="true">★</span>
+          <span class="testimonial-star" aria-hidden="true">★</span>
+          <span class="testimonial-star" aria-hidden="true">★</span>
+          <span class="testimonial-star" aria-hidden="true">★</span>
+        </div>
+        <p class="testimonial-card__body">
+          HOT PEPPERの手数料で毎月30万円近く消えていたのが、SalonOSに切り替えて
+          まるまる手元に残るようになりました。月2,980円で本当にいいのか最初は
+          半信半疑でしたが、導入して3ヶ月で元が取れました。
+        </p>
+        <footer class="testimonial-card__footer">
+          <div class="testimonial-avatar" aria-hidden="true">田</div>
+          <div>
+            <p class="testimonial-card__author-name">田中 由美子 さん</p>
+            <p class="testimonial-card__author-role">Salon de Yumi（東京都渋谷区）/ オーナー歴12年</p>
+          </div>
+        </footer>
+      </article>
+
+      <article class="testimonial-card reveal reveal-delay-2">
+        <div class="testimonial-card__quote-icon" aria-hidden="true">"</div>
+        <div class="testimonial-stars" aria-label="5つ星評価">
+          <span class="testimonial-star" aria-hidden="true">★</span>
+          <span class="testimonial-star" aria-hidden="true">★</span>
+          <span class="testimonial-star" aria-hidden="true">★</span>
+          <span class="testimonial-star" aria-hidden="true">★</span>
+          <span class="testimonial-star" aria-hidden="true">★</span>
+        </div>
+        <p class="testimonial-card__body">
+          スマホが苦手で最初は不安でしたが、操作がとにかくわかりやすくて
+          1週間で使いこなせました。LINEで予約が自動で入るので、
+          施術中に電話に出なくていいのが本当に助かっています。
+        </p>
+        <footer class="testimonial-card__footer">
+          <div class="testimonial-avatar" aria-hidden="true">山</div>
+          <div>
+            <p class="testimonial-card__author-name">山本 裕子 さん</p>
+            <p class="testimonial-card__author-role">ヘアサロン YU（大阪府堺市）/ 1人経営</p>
+          </div>
+        </footer>
+      </article>
+
+      <article class="testimonial-card reveal reveal-delay-3">
+        <div class="testimonial-card__quote-icon" aria-hidden="true">"</div>
+        <div class="testimonial-stars" aria-label="5つ星評価">
+          <span class="testimonial-star" aria-hidden="true">★</span>
+          <span class="testimonial-star" aria-hidden="true">★</span>
+          <span class="testimonial-star" aria-hidden="true">★</span>
+          <span class="testimonial-star" aria-hidden="true">★</span>
+          <span class="testimonial-star" aria-hidden="true">★</span>
+        </div>
+        <p class="testimonial-card__body">
+          顧客カルテがデジタルになって、お客様の好みや前回の施術を
+          すぐに確認できるようになりました。リピート率が上がり、
+          口コミ評価も4.2から4.8に改善。売上が1.4倍になりました。
+        </p>
+        <footer class="testimonial-card__footer">
+          <div class="testimonial-avatar" aria-hidden="true">佐</div>
+          <div>
+            <p class="testimonial-card__author-name">佐藤 美香 さん</p>
+            <p class="testimonial-card__author-role">Hair&amp;Nail SATO（愛知県名古屋市）/ 3店舗経営</p>
+          </div>
+        </footer>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     FAQ SECTION
+     ============================================================ -->
+<section class="faq section" id="faq" aria-label="よくある質問">
+  <div class="container">
+    <header class="faq__header">
+      <p class="section-eyebrow reveal">FAQ</p>
+      <h2 class="section-title reveal">よくある<span class="gradient-text">ご質問</span></h2>
+    </header>
+
+    <div class="faq__list reveal">
+
+      <details class="faq-item">
+        <summary>無料プランはずっと無料ですか？</summary>
+        <div class="faq-item__body">
+          はい、Starterプランは30件/月の予約管理・50名までの顧客カルテが
+          完全無料でご利用いただけます。期間制限もなく、クレジットカードの
+          登録も不要です。予約数が増えてきたタイミングでアップグレードをご検討ください。
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>HOT PEPPERからの乗り換えはできますか？</summary>
+        <div class="faq-item__body">
+          もちろん可能です。既存の顧客データ（CSV形式）をインポートする機能があります。
+          また、HOT PEPPERとの並行運用も可能なため、徐々に移行していただけます。
+          乗り換えサポートも無料で対応しています（Basicプラン以上）。
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>スマホが苦手でも使えますか？</summary>
+        <div class="faq-item__body">
+          40〜50代のオーナー様に多くお使いいただいています。
+          操作は直感的に設計されており、日本語での丁寧なオンボーディングガイドと
+          動画マニュアルをご用意しています。不明点はチャット・電話でいつでもサポートします。
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>セキュリティは大丈夫ですか？</summary>
+        <div class="faq-item__body">
+          顧客データはすべてSSL/TLS暗号化で保護されています。
+          データセンターは国内（東京リージョン）を使用し、毎日自動バックアップを実施。
+          Pマーク取得済みで、個人情報保護法に準拠した運用を行っています。
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>解約したい場合はどうすればいいですか？</summary>
+        <div class="faq-item__body">
+          管理画面から2クリックでいつでも解約できます。違約金・解約手数料は一切ありません。
+          解約後もデータは30日間保持されますので、CSV形式でエクスポートすることができます。
+          「縛り」はいっさいないので、安心してお試しください。
+        </div>
+      </details>
+
+      <details class="faq-item">
+        <summary>LINE公式アカウントは別に契約が必要ですか？</summary>
+        <div class="faq-item__body">
+          はい、LINE公式アカウント（無料プラン可）とのMessaging API連携が必要です。
+          LINEの月額費用はメッセージ数によりますが、月1,000通まで無料です。
+          SalonOSの管理画面から簡単に連携設定できます（所要時間：約15分）。
+        </div>
+      </details>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     FOOTER CTA
+     ============================================================ -->
+<section class="footer-cta" aria-label="今すぐ始める">
+  <div class="container footer-cta__inner">
+    <p class="footer-cta__label reveal">🌸 今だけ初月無料キャンペーン実施中</p>
+    <h2 class="footer-cta__title reveal">
+      美容室経営を、<br>もっと自由に。
+    </h2>
+    <p class="footer-cta__subtitle reveal">
+      HOT PEPPERへの依存から卒業し、<br>
+      あなただけの顧客リストを育てませんか。
+    </p>
+    <div class="footer-cta__buttons reveal">
+      <a href="#pricing" class="btn btn-white btn-lg">
+        無料で始める（クレカ不要）→
+      </a>
+      <a href="#features" class="btn btn-ghost-white btn-lg">
+        機能を詳しく見る
+      </a>
+    </div>
+    <ul class="footer-cta__trust reveal" role="list">
+      <li class="footer-cta__trust-item">クレジットカード不要</li>
+      <li class="footer-cta__trust-item">30件/月 無料</li>
+      <li class="footer-cta__trust-item">即日利用開始</li>
+      <li class="footer-cta__trust-item">解約いつでも</li>
+    </ul>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer" role="contentinfo">
+  <div class="container">
+    <div class="footer__top">
+
+      <!-- Brand -->
+      <div class="footer__brand">
+        <div class="footer__brand-logo">
+          <div class="footer__brand-logo-mark" aria-hidden="true">✂</div>
+          <span class="footer__brand-logo-text">Salon<span>OS</span></span>
+        </div>
+        <p class="footer__brand-desc">
+          美容室専用の予約・顧客管理・売上分析SaaS。
+          全国3,200店舗のオーナーさんに選ばれています。
+        </p>
+      </div>
+
+      <!-- Product Links -->
+      <nav aria-label="プロダクト">
+        <p class="footer__col-title">プロダクト</p>
+        <ul class="footer__links" role="list">
+          <li><a href="#features"    class="footer__link">機能一覧</a></li>
+          <li><a href="#pricing"     class="footer__link">料金プラン</a></li>
+          <li><a href="#comparison"  class="footer__link">他社比較</a></li>
+          <li><a href="#"            class="footer__link">導入事例</a></li>
+          <li><a href="#"            class="footer__link">アップデート</a></li>
+        </ul>
+      </nav>
+
+      <!-- Support Links -->
+      <nav aria-label="サポート">
+        <p class="footer__col-title">サポート</p>
+        <ul class="footer__links" role="list">
+          <li><a href="#faq"   class="footer__link">よくある質問</a></li>
+          <li><a href="#"      class="footer__link">操作マニュアル</a></li>
+          <li><a href="#"      class="footer__link">動画チュートリアル</a></li>
+          <li><a href="#"      class="footer__link">お問い合わせ</a></li>
+          <li><a href="#"      class="footer__link">システム状況</a></li>
+        </ul>
+      </nav>
+
+      <!-- Company Links -->
+      <nav aria-label="会社情報">
+        <p class="footer__col-title">会社情報</p>
+        <ul class="footer__links" role="list">
+          <li><a href="#" class="footer__link">会社概要</a></li>
+          <li><a href="#" class="footer__link">採用情報</a></li>
+          <li><a href="#" class="footer__link">プレスリリース</a></li>
+          <li><a href="#" class="footer__link">パートナー制度</a></li>
+        </ul>
+      </nav>
+
+    </div>
+
+    <div class="footer__bottom">
+      <p class="footer__copy">© 2025 SalonOS, Inc. All rights reserved.</p>
+      <nav class="footer__legal-links" aria-label="法的情報">
+        <a href="#" class="footer__legal-link">プライバシーポリシー</a>
+        <a href="#" class="footer__legal-link">利用規約</a>
+        <a href="#" class="footer__legal-link">特定商取引法</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+(function () {
+  'use strict';
+
+  /* ============================================================
+     1. NAVBAR: スクロールで背景を付与
+     ============================================================ */
+  const navbar = document.getElementById('navbar');
+
+  function updateNavbar() {
+    if (window.scrollY > 20) {
+      navbar.classList.add('scrolled');
+    } else {
+      navbar.classList.remove('scrolled');
+    }
+  }
+
+  window.addEventListener('scroll', updateNavbar, { passive: true });
+  updateNavbar(); // 初期チェック
+
+
+  /* ============================================================
+     2. HAMBURGER MENU: モバイルナビ開閉
+     ============================================================ */
+  const hamburger   = document.getElementById('hamburger');
+  const mobileMenu  = document.getElementById('mobile-menu');
+  let menuOpen = false;
+
+  function toggleMenu(forceClose) {
+    menuOpen = forceClose ? false : !menuOpen;
+    mobileMenu.classList.toggle('open', menuOpen);
+    hamburger.setAttribute('aria-expanded', String(menuOpen));
+    hamburger.setAttribute('aria-label', menuOpen ? 'メニューを閉じる' : 'メニューを開く');
+
+    // ハンバーガー → ✕ アニメーション
+    const spans = hamburger.querySelectorAll('span');
+    if (menuOpen) {
+      spans[0].style.transform = 'translateY(7px) rotate(45deg)';
+      spans[1].style.opacity   = '0';
+      spans[2].style.transform = 'translateY(-7px) rotate(-45deg)';
+    } else {
+      spans[0].style.transform = '';
+      spans[1].style.opacity   = '';
+      spans[2].style.transform = '';
+    }
+  }
+
+  hamburger.addEventListener('click', () => toggleMenu());
+
+  // モバイルリンクをクリックで閉じる
+  mobileMenu.querySelectorAll('a').forEach(function (link) {
+    link.addEventListener('click', function () { toggleMenu(true); });
+  });
+
+  // 外側クリックで閉じる
+  document.addEventListener('click', function (e) {
+    if (menuOpen && !navbar.contains(e.target) && !mobileMenu.contains(e.target)) {
+      toggleMenu(true);
+    }
+  });
+
+
+  /* ============================================================
+     3. SCROLL REVEAL: IntersectionObserver
+     ============================================================ */
+  const revealEls = document.querySelectorAll('.reveal');
+
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target); // 一度表示したら監視解除
+          }
+        });
+      },
+      {
+        threshold: 0.12,      // 12%見えたらトリガー
+        rootMargin: '0px 0px -40px 0px'
+      }
+    );
+
+    revealEls.forEach(function (el) { observer.observe(el); });
+  } else {
+    // IntersectionObserver 非対応環境ではすべて即表示
+    revealEls.forEach(function (el) { el.classList.add('visible'); });
+  }
+
+
+  /* ============================================================
+     4. SMOOTH SCROLL: anchorリンク
+     ============================================================ */
+  document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
+    anchor.addEventListener('click', function (e) {
+      const targetId = this.getAttribute('href');
+      if (targetId === '#') return;
+
+      const target = document.querySelector(targetId);
+      if (!target) return;
+
+      e.preventDefault();
+
+      const navH = parseInt(
+        getComputedStyle(document.documentElement)
+          .getPropertyValue('--nav-height') || '72',
+        10
+      );
+
+      const top = target.getBoundingClientRect().top + window.scrollY - navH - 16;
+      window.scrollTo({ top: top, behavior: 'smooth' });
+    });
+  });
+
+
+  /* ============================================================
+     5. PRICING CARD: ホバー時のフィーチャー強調
+     ============================================================ */
+  document.querySelectorAll('.pricing-card').forEach(function (card) {
+    card.addEventListener('mouseenter', function () {
+      document.querySelectorAll('.pricing-card').forEach(function (c) {
+        if (c !== card && !c.classList.contains('pricing-card--featured')) {
+          c.style.opacity = '0.75';
+        }
+      });
+    });
+    card.addEventListener('mouseleave', function () {
+      document.querySelectorAll('.pricing-card').forEach(function (c) {
+        c.style.opacity = '';
+      });
+    });
+  });
+
+})();
+</script>
+
+</body>
+</html>

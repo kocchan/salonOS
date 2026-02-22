@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SalonOS - 美容室管理システム</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* カスタムクラス（別エージェントが担当するCSSの補完用） */
+    .card {
+      @apply bg-white rounded-2xl shadow-sm border border-gray-100 p-5;
+    }
+    .badge-overdue {
+      @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700;
+    }
+    .badge-ok {
+      @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700;
+    }
+    .status-confirmed {
+      @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700;
+    }
+    .status-pending {
+      @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700;
+    }
+    .status-cancelled {
+      @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-500;
+    }
+    .nav-item {
+      @apply flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-all cursor-pointer text-sm font-medium;
+    }
+    .nav-item.active {
+      @apply bg-indigo-600 text-white hover:bg-indigo-700 hover:text-white;
+    }
+    .timeline-item {
+      @apply relative pl-8 pb-8;
+    }
+    .timeline-item::before {
+      content: '';
+      @apply absolute left-3 top-5 bottom-0 w-px bg-gray-200;
+    }
+    .timeline-item:last-child::before {
+      display: none;
+    }
+    .timeline-dot {
+      @apply absolute left-0 w-6 h-6 rounded-full bg-indigo-100 border-2 border-indigo-400 flex items-center justify-center;
+    }
+    .page {
+      @apply hidden;
+    }
+    .page.active {
+      @apply block;
+    }
+    .kpi-card {
+      @apply bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col gap-2;
+    }
+    .btn-primary {
+      @apply inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 transition-colors cursor-pointer;
+    }
+    .btn-secondary {
+      @apply inline-flex items-center gap-2 px-4 py-2.5 bg-white text-gray-700 text-sm font-semibold rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer;
+    }
+    .btn-line {
+      @apply inline-flex items-center gap-2 px-4 py-2.5 bg-green-500 text-white text-sm font-semibold rounded-xl hover:bg-green-600 transition-colors cursor-pointer;
+    }
+    .btn-line.sending {
+      @apply bg-green-400 cursor-not-allowed;
+    }
+    .btn-line.sent {
+      @apply bg-green-600;
+    }
+    .customer-card {
+      @apply bg-white rounded-2xl shadow-sm border border-gray-100 p-5 cursor-pointer hover:shadow-md hover:border-indigo-200 transition-all;
+    }
+    .appt-card {
+      @apply bg-white rounded-xl border border-gray-100 p-4 hover:shadow-sm transition-all;
+    }
+    .search-input {
+      @apply w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-white text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 transition-all;
+    }
+    .avatar {
+      @apply w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 font-bold text-sm flex items-center justify-center flex-shrink-0;
+    }
+    .avatar-lg {
+      @apply w-16 h-16 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xl flex items-center justify-center flex-shrink-0;
+    }
+    .section-title {
+      @apply text-lg font-bold text-gray-800 mb-4;
+    }
+    .overdue-alert-card {
+      @apply bg-red-50 border border-red-100 rounded-2xl p-5 cursor-pointer hover:shadow-md hover:border-red-300 transition-all;
+    }
+    /* スクロールバーのスタイル */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+  </style>
+</head>
+<body class="bg-gray-50 font-sans antialiased">
+
+<!-- ========== SIDEBAR ========== -->
+<aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-100 shadow-sm flex flex-col z-40">
+
+  <!-- ロゴ -->
+  <div class="logo px-6 py-5 border-b border-gray-100">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center">
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/>
+        </svg>
+      </div>
+      <div>
+        <div class="text-base font-bold text-gray-900 leading-tight">SalonOS</div>
+        <div class="text-xs text-gray-400">美容室管理システム</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ナビゲーション -->
+  <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+    <button class="nav-item w-full text-left active" data-page="dashboard" onclick="Router.navigate('dashboard')">
+      <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+      </svg>
+      <span>ダッシュボード</span>
+    </button>
+
+    <button class="nav-item w-full text-left" data-page="appointments" onclick="Router.navigate('appointments')">
+      <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+      </svg>
+      <span>予約管理</span>
+    </button>
+
+    <button class="nav-item w-full text-left" data-page="customers" onclick="Router.navigate('customers')">
+      <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+      </svg>
+      <span>顧客カルテ</span>
+    </button>
+
+    <button class="nav-item w-full text-left" data-page="line-send" onclick="Router.navigate('line-send')">
+      <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+      </svg>
+      <span>LINE送信</span>
+      <span id="nav-line-badge" class="ml-auto bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center hidden"></span>
+    </button>
+  </nav>
+
+  <!-- サイドバーフッター（サロン情報） -->
+  <div class="px-4 py-4 border-t border-gray-100">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold">SA</div>
+      <div class="flex-1 min-w-0">
+        <div class="text-xs font-semibold text-gray-800 truncate">Salon Aile</div>
+        <div class="text-xs text-gray-400 truncate">オーナー</div>
+      </div>
+      <button class="text-gray-400 hover:text-gray-600 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</aside>
+
+<!-- ========== MAIN CONTENT ========== -->
+<main id="main-content" class="ml-64 min-h-screen">
+
+  <!-- トップバー -->
+  <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-sm border-b border-gray-100 px-8 py-4 flex items-center justify-between">
+    <div>
+      <h1 id="page-title" class="text-xl font-bold text-gray-900">ダッシュボード</h1>
+      <p id="page-subtitle" class="text-xs text-gray-400 mt-0.5">サロンの状況を一目で確認できます</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <!-- 通知ベル -->
+      <button class="relative w-9 h-9 rounded-xl border border-gray-200 bg-white flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors">
+        <svg class="w-4.5 h-4.5 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+        </svg>
+        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+      </button>
+      <!-- 今日の日付 -->
+      <div class="text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-xl border border-gray-100 font-medium" id="today-display"></div>
+    </div>
+  </header>
+
+  <!-- ページコンテナ -->
+  <div class="px-8 py-6 max-w-7xl mx-auto">
+
+    <!-- ========== DASHBOARD PAGE ========== -->
+    <div id="page-dashboard" class="page active">
+
+      <!-- KPIカード群 -->
+      <div class="grid grid-cols-4 gap-5 mb-8">
+        <!-- 月次売上 -->
+        <div class="kpi-card">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">月次売上</span>
+            <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center">
+              <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="text-3xl font-bold text-gray-900" id="kpi-revenue">¥0</div>
+          <div class="flex items-center gap-1 text-xs text-green-600 font-medium">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+            </svg>
+            <span id="kpi-revenue-diff">前月比 +0%</span>
+          </div>
+        </div>
+
+        <!-- 新規客数 -->
+        <div class="kpi-card">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">新規客数</span>
+            <div class="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
+              <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="text-3xl font-bold text-gray-900" id="kpi-new-customers">0</div>
+          <div class="text-xs text-gray-400 font-medium">今月の初来店</div>
+        </div>
+
+        <!-- リピート率 -->
+        <div class="kpi-card">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">リピート率</span>
+            <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
+              <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+            </div>
+          </div>
+          <div class="text-3xl font-bold text-gray-900" id="kpi-repeat-rate">0%</div>
+          <div class="text-xs text-gray-400 font-medium">2回以上来店した顧客</div>
+        </div>
+
+        <!-- LINE送信数 -->
+        <div class="kpi-card">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">LINE送信数</span>
+            <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center">
+              <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="text-3xl font-bold text-gray-900" id="kpi-line-sent">0</div>
+          <div class="text-xs text-gray-400 font-medium">今月の送信数</div>
+        </div>
+      </div>
+
+      <!-- 下段：今日の予約 ＋ 要フォローアップ -->
+      <div class="grid grid-cols-3 gap-6">
+
+        <!-- 今日の予約リスト -->
+        <div class="col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <div class="flex items-center justify-between mb-5">
+            <h2 class="section-title mb-0">今日の予約</h2>
+            <button class="btn-secondary text-xs py-1.5 px-3" onclick="Router.navigate('appointments')">
+              すべて見る
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+          <div id="today-appointments-list" class="space-y-3">
+            <!-- JS で挿入 -->
+            <div class="text-center py-10 text-gray-400 text-sm">読み込み中...</div>
+          </div>
+        </div>
+
+        <!-- 3ヶ月未来店アラート -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <div class="flex items-center justify-between mb-5">
+            <h2 class="section-title mb-0">フォロー推奨</h2>
+            <span class="badge-overdue" id="overdue-count-badge">0名</span>
+          </div>
+          <p class="text-xs text-gray-400 mb-4">3ヶ月以上ご来店がない顧客</p>
+          <div id="dashboard-overdue-list" class="space-y-3">
+            <!-- JS で挿入 -->
+            <div class="text-center py-6 text-gray-400 text-sm">読み込み中...</div>
+          </div>
+          <button class="w-full mt-4 btn-line justify-center" onclick="Router.navigate('line-send')">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+            LINE一括送信へ
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== APPOINTMENTS PAGE ========== -->
+    <div id="page-appointments" class="page">
+
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+          <button id="appt-prev-week" class="w-8 h-8 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <span id="appt-week-label" class="text-sm font-semibold text-gray-700"></span>
+          <button id="appt-next-week" class="w-8 h-8 rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+        <button class="btn-primary" onclick="openAddAppointmentModal()">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          予約を追加
+        </button>
+      </div>
+
+      <!-- 週カレンダーグリッド -->
+      <div id="week-calendar-grid" class="grid grid-cols-7 gap-3">
+        <!-- JS で挿入 -->
+      </div>
+    </div>
+
+    <!-- ========== CUSTOMERS PAGE ========== -->
+    <div id="page-customers" class="page">
+
+      <!-- 検索バー -->
+      <div class="mb-6 flex items-center gap-4">
+        <div class="relative flex-1 max-w-md">
+          <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input
+            id="customer-search"
+            type="text"
+            placeholder="名前・電話番号で検索..."
+            class="search-input"
+            oninput="renderCustomers(this.value)"
+          />
+        </div>
+        <div class="flex items-center gap-2 text-sm text-gray-500">
+          <span id="customer-count-label" class="font-semibold text-gray-700">0</span>名の顧客
+        </div>
+        <div class="flex items-center gap-2">
+          <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+            <input type="checkbox" id="filter-overdue" class="rounded text-indigo-600" onchange="renderCustomers(document.getElementById('customer-search').value)">
+            <span>要フォローのみ</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 顧客カードグリッド -->
+      <div id="customers-grid" class="grid grid-cols-3 gap-4">
+        <!-- JS で挿入 -->
+      </div>
+
+      <!-- 空状態 -->
+      <div id="customers-empty" class="hidden text-center py-20">
+        <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+        <p class="text-gray-400 text-sm">該当する顧客が見つかりませんでした</p>
+      </div>
+    </div>
+
+    <!-- ========== CUSTOMER DETAIL PAGE ========== -->
+    <div id="page-customer-detail" class="page">
+
+      <!-- 戻るボタン -->
+      <button class="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 mb-6 transition-colors" onclick="Router.navigate('customers')">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        顧客一覧に戻る
+      </button>
+
+      <!-- プロフィールヘッダー -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+        <div class="flex items-start gap-5">
+          <div class="avatar-lg" id="detail-avatar">--</div>
+          <div class="flex-1">
+            <div class="flex items-center gap-3 mb-1">
+              <h2 class="text-2xl font-bold text-gray-900" id="detail-name">--</h2>
+              <span id="detail-overdue-badge" class="hidden badge-overdue">要フォロー</span>
+            </div>
+            <div class="flex items-center gap-4 text-sm text-gray-500 mb-3">
+              <span class="flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                </svg>
+                <span id="detail-phone">--</span>
+              </span>
+              <span class="flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <span id="detail-registered">登録日：--</span>
+              </span>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="bg-indigo-50 rounded-xl px-4 py-2 text-center">
+                <div class="text-xl font-bold text-indigo-700" id="detail-visit-count">0</div>
+                <div class="text-xs text-gray-500">来店回数</div>
+              </div>
+              <div class="bg-purple-50 rounded-xl px-4 py-2 text-center">
+                <div class="text-xl font-bold text-purple-700" id="detail-total-revenue">¥0</div>
+                <div class="text-xs text-gray-500">累計売上</div>
+              </div>
+              <div class="bg-amber-50 rounded-xl px-4 py-2 text-center">
+                <div class="text-sm font-bold text-amber-700" id="detail-last-visit">--</div>
+                <div class="text-xs text-gray-500">最終来店</div>
+              </div>
+              <div class="bg-green-50 rounded-xl px-4 py-2 text-center">
+                <div class="text-sm font-bold text-green-700" id="detail-next-recommend">--</div>
+                <div class="text-xs text-gray-500">次回推奨</div>
+              </div>
+            </div>
+          </div>
+          <!-- アクションボタン -->
+          <div class="flex items-center gap-2">
+            <button class="btn-secondary" onclick="openAddAppointmentModal()">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+              予約追加
+            </button>
+            <button id="detail-line-btn" class="btn-line" onclick="handleLineSendFromDetail()">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+              </svg>
+              LINE送信
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 施術メモ -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+        <h3 class="text-sm font-bold text-gray-700 mb-2">スタイリストメモ</h3>
+        <p id="detail-memo" class="text-sm text-gray-600 leading-relaxed">--</p>
+      </div>
+
+      <!-- 施術履歴タイムライン -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <h3 class="text-base font-bold text-gray-800 mb-6">施術履歴</h3>
+        <div id="detail-timeline" class="space-y-0">
+          <!-- JS で挿入 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== LINE SEND PAGE ========== -->
+    <div id="page-line-send" class="page">
+
+      <!-- ページヘッダー -->
+      <div class="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-6 mb-6 text-white">
+        <div class="flex items-center gap-3 mb-2">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+          </svg>
+          <h2 class="text-lg font-bold">LINE一括送信</h2>
+        </div>
+        <p class="text-sm text-green-100">3ヶ月以上ご来店のない顧客へパーソナライズメッセージを送信します</p>
+        <div class="mt-3 flex items-center gap-4">
+          <div class="bg-white/20 rounded-lg px-3 py-1.5 text-sm font-semibold">
+            対象：<span id="line-target-count">0</span> 名
+          </div>
+          <button id="bulk-send-btn" class="bg-white text-green-700 px-4 py-1.5 rounded-lg text-sm font-bold hover:bg-green-50 transition-colors" onclick="handleBulkLineSend()">
+            一括送信する
+          </button>
+        </div>
+      </div>
+
+      <!-- 送信リスト -->
+      <div id="line-send-list" class="space-y-4">
+        <!-- JS で挿入 -->
+      </div>
+
+      <!-- 空状態 -->
+      <div id="line-send-empty" class="hidden text-center py-20">
+        <div class="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <p class="text-gray-500 font-semibold text-sm">全員が定期的にご来店されています</p>
+        <p class="text-gray-400 text-xs mt-1">フォロー送信が必要な顧客はいません</p>
+      </div>
+    </div>
+
+  </div><!-- end .px-8 -->
+</main>
+
+<!-- ========== MODAL OVERLAY ========== -->
+<div id="modal-overlay" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onclick="closeModal(event)">
+
+  <!-- 予約追加モーダル -->
+  <div id="modal-add-appointment" class="hidden bg-white rounded-2xl shadow-xl w-full max-w-md p-6" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="text-lg font-bold text-gray-900">予約を追加</h3>
+      <button class="text-gray-400 hover:text-gray-600 transition-colors" onclick="closeModal()">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <form class="space-y-4" onsubmit="return false">
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1.5">顧客名</label>
+        <select class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-300" id="modal-customer-select">
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">日付</label>
+          <input type="date" id="modal-date" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-300">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">時間</label>
+          <select id="modal-time" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-300">
+            <option>9:00</option><option>10:00</option><option>11:00</option>
+            <option>12:00</option><option>13:00</option><option>14:00</option>
+            <option>15:00</option><option>16:00</option><option>17:00</option>
+            <option>18:00</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1.5">メニュー</label>
+        <input type="text" id="modal-menu" placeholder="例：カット + カラー" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-300 placeholder-gray-400">
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1.5">担当スタイリスト</label>
+        <input type="text" id="modal-stylist" placeholder="例：田中" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-300 placeholder-gray-400">
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="button" class="flex-1 btn-secondary justify-center" onclick="closeModal()">キャンセル</button>
+        <button type="button" class="flex-1 btn-primary justify-center" onclick="handleAddAppointment()">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          追加する
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- LINE送信確認モーダル -->
+  <div id="modal-line-confirm" class="hidden bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 text-center" onclick="event.stopPropagation()">
+    <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
+      <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+      </svg>
+    </div>
+    <h3 class="text-lg font-bold text-gray-900 mb-2">LINE送信完了</h3>
+    <p id="modal-line-confirm-msg" class="text-sm text-gray-500 mb-5">送信しました。</p>
+    <button class="w-full btn-primary justify-center" onclick="closeModal()">閉じる</button>
+  </div>
+
+</div>
+<!-- ========== SCRIPTS ========== -->
+<script>
+/* =====================================================
+   DUMMY_DATA は外部から注入される前提。
+   ここではフォールバック用のデフォルト値を定義する。
+===================================================== */
+if (typeof DUMMY_DATA === 'undefined') {
+  window.DUMMY_DATA = {
+    customers: [],
+    appointments: [],
+    lineSentCount: 0,
+    previousMonthRevenue: 0
+  };
+}
+
+/* =====================================================
+   ヘルパー関数
+===================================================== */
+
+/**
+ * 顧客の最終来店日を返す（文字列 "YYYY-MM-DD"）
+ * visits が空の場合は null を返す
+ */
+function getLastVisitDate(customer) {
+  if (!customer.visits || customer.visits.length === 0) return null;
+  const sorted = [...customer.visits].sort((a, b) => new Date(b.date) - new Date(a.date));
+  return sorted[0].date;
+}
+
+/**
+ * 最終来店日から3ヶ月以上経過しているか判定
+ */
+function isOverdue(customer) {
+  const lastVisit = getLastVisitDate(customer);
+  if (!lastVisit) return true;
+  const last = new Date(lastVisit);
+  const threeMonthsAgo = new Date();
+  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+  return last <= threeMonthsAgo;
+}
+
+/**
+ * 今月の売上合計を計算する
+ */
+function calcMonthlyRevenue() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  let total = 0;
+  (DUMMY_DATA.customers || []).forEach(customer => {
+    (customer.visits || []).forEach(visit => {
+      const d = new Date(visit.date);
+      if (d.getFullYear() === year && d.getMonth() === month) {
+        total += (visit.price || 0);
+      }
+    });
+  });
+  return total;
+}
+
+/**
+ * 日付文字列を「YYYY年MM月DD日」形式にフォーマット
+ */
+function formatDate(dateStr) {
+  if (!dateStr) return '--';
+  const d = new Date(dateStr);
+  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+}
+
+/**
+ * 日付を「M/D(曜)」形式にフォーマット
+ */
+function formatDateShort(date) {
+  const DOW = ['日', '月', '火', '水', '木', '金', '土'];
+  return `${date.getMonth() + 1}/${date.getDate()}(${DOW[date.getDay()]})`;
+}
+
+/**
+ * 日付を YYYY-MM-DD 形式に変換（ローカル時刻）
+ */
+function toDateString(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+/**
+ * 今日の日付文字列を返す
+ */
+function todayString() {
+  return toDateString(new Date());
+}
+
+/**
+ * LINEパーソナライズメッセージを生成
+ */
+function generateLineMessage(customer) {
+  const lastVisit = getLastVisitDate(customer);
+  const sorted = [...(customer.visits || [])].sort((a, b) => new Date(b.date) - new Date(a.date));
+  const lastMenu = sorted.length > 0 ? sorted[0].menu : 'ご来店';
+  const firstName = customer.name ? customer.name.split(/[\s　]/)[0] : customer.name;
+  return `${firstName}さん、こんにちは！\n前回の${lastMenu}から3ヶ月が経ちました。\nそろそろお手入れの時期ではないでしょうか？\n\nご予約はこちらから\nhttps://salon-demo.example.com/book`;
+}
+
+/**
+ * 顧客のイニシャル（アバター用）を取得
+ */
+function getInitials(name) {
+  if (!name) return '?';
+  const parts = name.split(/[\s　]/);
+  if (parts.length >= 2) return parts[0][0] + parts[1][0];
+  return name.slice(0, 2);
+}
+
+/**
+ * 予約のステータスに対応するバッジHTMLを返す
+ */
+function getStatusBadgeHTML(status) {
+  const map = {
+    confirmed: ['status-confirmed', '確定'],
+    pending:   ['status-pending',   '仮予約'],
+    cancelled: ['status-cancelled', 'キャンセル'],
+    completed: ['badge-ok',         '完了'],
+  };
+  const [cls, label] = map[status] || ['status-pending', status];
+  return `<span class="${cls}">${label}</span>`;
+}
+
+/**
+ * 今週の月曜〜日曜の Date 配列を返す（weekOffset: 0=今週、1=来週…）
+ */
+function getWeekDays(weekOffset = 0) {
+  const today = new Date();
+  const dow = today.getDay(); // 0=日
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1) + weekOffset * 7);
+  monday.setHours(0, 0, 0, 0);
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d;
+  });
+}
+
+/**
+ * 今月の新規顧客数（1回目の来店が今月）
+ */
+function calcNewCustomersThisMonth() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  return (DUMMY_DATA.customers || []).filter(c => {
+    if (!c.visits || c.visits.length === 0) return false;
+    const sorted = [...c.visits].sort((a, b) => new Date(a.date) - new Date(b.date));
+    const firstDate = new Date(sorted[0].date);
+    return firstDate.getFullYear() === year && firstDate.getMonth() === month;
+  }).length;
+}
+
+/**
+ * リピート率を計算（2回以上来店した顧客 / 全顧客）
+ */
+function calcRepeatRate() {
+  const customers = DUMMY_DATA.customers || [];
+  if (customers.length === 0) return 0;
+  const repeat = customers.filter(c => (c.visits || []).length >= 2).length;
+  return Math.round((repeat / customers.length) * 100);
+}
+
+/**
+ * 顧客の累計売上を計算
+ */
+function calcCustomerTotalRevenue(customer) {
+  return (customer.visits || []).reduce((sum, v) => sum + (v.price || 0), 0);
+}
+
+/**
+ * 次回来店推奨日（最終来店日 + 60日）
+ */
+function calcNextRecommendDate(customer) {
+  const last = getLastVisitDate(customer);
+  if (!last) return null;
+  const d = new Date(last);
+  d.setDate(d.getDate() + 60);
+  return d;
+}
+
+/* =====================================================
+   ルーター
+===================================================== */
+const Router = {
+  currentPage: 'dashboard',
+  params: {},
+  weekOffset: 0,
+
+  navigate(page, params = {}) {
+    // 全 .page を非表示
+    document.querySelectorAll('.page').forEach(el => {
+      el.classList.remove('active');
+      el.classList.add('hidden');
+    });
+
+    // 対象ページを表示
+    const target = document.getElementById(`page-${page}`);
+    if (target) {
+      target.classList.remove('hidden');
+      target.classList.add('active');
+    }
+
+    // ナビのアクティブ状態を更新
+    document.querySelectorAll('.nav-item').forEach(el => {
+      el.classList.remove('active');
+      if (el.dataset.page === page || (page === 'customer-detail' && el.dataset.page === 'customers')) {
+        el.classList.add('active');
+      }
+    });
+
+    // ページタイトル更新
+    const titles = {
+      dashboard:        ['ダッシュボード', 'サロンの状況を一目で確認できます'],
+      appointments:     ['予約管理', '今週のスケジュールを管理します'],
+      customers:        ['顧客カルテ', '全顧客の施術履歴・情報を管理します'],
+      'customer-detail':['顧客カルテ詳細', '施術履歴・来店情報の詳細'],
+      'line-send':      ['LINE送信', '3ヶ月以上未来店の顧客にメッセージを送信します'],
+    };
+    const [title, subtitle] = titles[page] || [page, ''];
+    document.getElementById('page-title').textContent = title;
+    document.getElementById('page-subtitle').textContent = subtitle;
+
+    this.currentPage = page;
+    this.params = params;
+
+    // スクロールをトップへ
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // ページ別レンダリング
+    if (page === 'dashboard')        renderDashboard();
+    if (page === 'appointments')     renderAppointments();
+    if (page === 'customers')        { document.getElementById('customer-search').value = ''; renderCustomers(''); }
+    if (page === 'customer-detail')  renderCustomerDetail(params.customerId);
+    if (page === 'line-send')        renderLineSend();
+  }
+};
+
+/* =====================================================
+   ダッシュボードのレンダリング
+===================================================== */
+function renderDashboard() {
+  // KPI 計算
+  const revenue = calcMonthlyRevenue();
+  const prevRevenue = DUMMY_DATA.previousMonthRevenue || 0;
+  const revDiff = prevRevenue > 0
+    ? ((revenue - prevRevenue) / prevRevenue * 100).toFixed(1)
+    : null;
+
+  document.getElementById('kpi-revenue').textContent = '¥' + revenue.toLocaleString('ja-JP');
+  document.getElementById('kpi-revenue-diff').textContent = revDiff !== null
+    ? `前月比 ${revDiff >= 0 ? '+' : ''}${revDiff}%`
+    : '前月データなし';
+
+  document.getElementById('kpi-new-customers').textContent = calcNewCustomersThisMonth();
+  document.getElementById('kpi-repeat-rate').textContent = calcRepeatRate() + '%';
+  document.getElementById('kpi-line-sent').textContent = DUMMY_DATA.lineSentCount || 0;
+
+  // 今日の予約
+  const today = todayString();
+  const todayAppts = (DUMMY_DATA.appointments || [])
+    .filter(a => a.date === today)
+    .sort((a, b) => a.time.localeCompare(b.time));
+
+  const todayList = document.getElementById('today-appointments-list');
+  if (todayAppts.length === 0) {
+    todayList.innerHTML = `
+      <div class="text-center py-10 text-gray-400 text-sm">
+        <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
+          <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        今日の予約はありません
+      </div>`;
+  } else {
+    todayList.innerHTML = todayAppts.map(appt => {
+      const customer = (DUMMY_DATA.customers || []).find(c => c.id === appt.customerId);
+      const name = customer ? customer.name : (appt.customerName || '不明');
+      const initials = getInitials(name);
+      return `
+        <div class="appt-card flex items-center gap-3 cursor-pointer hover:border-indigo-200"
+             onclick="Router.navigate('customer-detail', {customerId: '${appt.customerId}'})">
+          <div class="text-center min-w-[48px]">
+            <div class="text-base font-bold text-indigo-700">${appt.time}</div>
+          </div>
+          <div class="w-px h-10 bg-gray-100"></div>
+          <div class="avatar">${initials}</div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-semibold text-gray-800">${name}</div>
+            <div class="text-xs text-gray-400">${appt.menu || '--'} · ${appt.stylist || '--'}</div>
+          </div>
+          ${getStatusBadgeHTML(appt.status)}
+        </div>`;
+    }).join('');
+  }
+
+  // フォロー推奨（3ヶ月未来店）
+  const overdueCustomers = (DUMMY_DATA.customers || []).filter(isOverdue);
+  document.getElementById('overdue-count-badge').textContent = overdueCustomers.length + '名';
+
+  // LINEバッジ更新
+  const lineBadge = document.getElementById('nav-line-badge');
+  if (overdueCustomers.length > 0) {
+    lineBadge.textContent = overdueCustomers.length;
+    lineBadge.classList.remove('hidden');
+  } else {
+    lineBadge.classList.add('hidden');
+  }
+
+  const overdueList = document.getElementById('dashboard-overdue-list');
+  if (overdueCustomers.length === 0) {
+    overdueList.innerHTML = `<div class="text-center py-6 text-gray-400 text-sm">フォロー対象の顧客はいません</div>`;
+  } else {
+    overdueList.innerHTML = overdueCustomers.slice(0, 5).map(c => {
+      const lastVisit = getLastVisitDate(c);
+      const daysSince = lastVisit
+        ? Math.floor((new Date() - new Date(lastVisit)) / (1000 * 60 * 60 * 24))
+        : null;
+      return `
+        <div class="overdue-alert-card flex items-center gap-3"
+             onclick="Router.navigate('customer-detail', {customerId: '${c.id}'})">
+          <div class="avatar flex-shrink-0">${getInitials(c.name)}</div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-semibold text-gray-800">${c.name}</div>
+            <div class="text-xs text-red-500">
+              ${daysSince !== null ? `${daysSince}日間未来店` : '来店記録なし'}
+            </div>
+          </div>
+          <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </div>`;
+    }).join('');
+    if (overdueCustomers.length > 5) {
+      overdueList.innerHTML += `<div class="text-center text-xs text-gray-400 pt-2">他 ${overdueCustomers.length - 5} 名</div>`;
+    }
+  }
+}
+
+/* =====================================================
+   予約管理のレンダリング
+===================================================== */
+function renderAppointments() {
+  const weekDays = getWeekDays(Router.weekOffset);
+  const startDate = weekDays[0];
+  const endDate = weekDays[6];
+
+  // 週ラベル
+  document.getElementById('appt-week-label').textContent =
+    `${startDate.getMonth() + 1}月${startDate.getDate()}日 〜 ${endDate.getMonth() + 1}月${endDate.getDate()}日`;
+
+  const grid = document.getElementById('week-calendar-grid');
+  const todayStr = todayString();
+
+  grid.innerHTML = weekDays.map(day => {
+    const dateStr = toDateString(day);
+    const isToday = dateStr === todayStr;
+    const dayAppts = (DUMMY_DATA.appointments || [])
+      .filter(a => a.date === dateStr)
+      .sort((a, b) => a.time.localeCompare(b.time));
+
+    const DOW_COLORS = ['text-red-500', 'text-gray-700', 'text-gray-700', 'text-gray-700', 'text-gray-700', 'text-gray-700', 'text-blue-500'];
+    const dowColor = DOW_COLORS[day.getDay()];
+    const DOW_LABELS = ['日', '月', '火', '水', '木', '金', '土'];
+
+    return `
+      <div class="bg-white rounded-2xl border ${isToday ? 'border-indigo-300 shadow-md' : 'border-gray-100 shadow-sm'} overflow-hidden">
+        <!-- 日付ヘッダー -->
+        <div class="px-3 py-2.5 border-b ${isToday ? 'bg-indigo-50 border-indigo-100' : 'bg-gray-50 border-gray-100'} flex items-center justify-between">
+          <div>
+            <div class="text-xs font-semibold ${dowColor}">${DOW_LABELS[day.getDay()]}</div>
+            <div class="text-lg font-bold ${isToday ? 'text-indigo-700' : 'text-gray-800'}">${day.getDate()}</div>
+          </div>
+          ${isToday ? '<span class="text-xs bg-indigo-600 text-white px-1.5 py-0.5 rounded-md font-semibold">今日</span>' : ''}
+          ${dayAppts.length > 0 ? `<span class="text-xs bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded-md font-semibold">${dayAppts.length}件</span>` : ''}
+        </div>
+
+        <!-- 予約リスト -->
+        <div class="p-2 space-y-1.5 min-h-[120px]">
+          ${dayAppts.length === 0
+            ? '<div class="h-full flex items-center justify-center text-gray-300 text-xs py-8">予約なし</div>'
+            : dayAppts.map(appt => {
+                const customer = (DUMMY_DATA.customers || []).find(c => c.id === appt.customerId);
+                const name = customer ? customer.name : (appt.customerName || '不明');
+                return `
+                  <div class="appt-card p-2 cursor-pointer text-xs"
+                       onclick="Router.navigate('customer-detail', {customerId: '${appt.customerId}'})">
+                    <div class="font-bold text-gray-800 truncate">${appt.time} ${name}</div>
+                    <div class="text-gray-400 truncate">${appt.menu || '--'}</div>
+                    <div class="mt-1">${getStatusBadgeHTML(appt.status)}</div>
+                  </div>`;
+              }).join('')}
+          <button class="w-full mt-1 text-xs text-gray-400 hover:text-indigo-600 py-1 border border-dashed border-gray-200 hover:border-indigo-300 rounded-lg transition-colors"
+                  onclick="openAddAppointmentModal('${dateStr}')">
+            + 追加
+          </button>
+        </div>
+      </div>`;
+  }).join('');
+
+  // 週ナビゲーション
+  document.getElementById('appt-prev-week').onclick = () => { Router.weekOffset--; renderAppointments(); };
+  document.getElementById('appt-next-week').onclick = () => { Router.weekOffset++; renderAppointments(); };
+}
+
+/* =====================================================
+   顧客一覧のレンダリング
+===================================================== */
+function renderCustomers(searchQuery = '') {
+  const query = (searchQuery || '').trim().toLowerCase();
+  const filterOverdue = document.getElementById('filter-overdue')?.checked || false;
+
+  let customers = DUMMY_DATA.customers || [];
+
+  // 検索フィルタ
+  if (query) {
+    customers = customers.filter(c =>
+      (c.name || '').toLowerCase().includes(query) ||
+      (c.phone || '').includes(query) ||
+      (c.email || '').toLowerCase().includes(query)
+    );
+  }
+
+  // 要フォローフィルタ
+  if (filterOverdue) {
+    customers = customers.filter(isOverdue);
+  }
+
+  document.getElementById('customer-count-label').textContent = customers.length;
+  const grid = document.getElementById('customers-grid');
+  const empty = document.getElementById('customers-empty');
+
+  if (customers.length === 0) {
+    grid.innerHTML = '';
+    grid.classList.add('hidden');
+    empty.classList.remove('hidden');
+    return;
+  }
+
+  grid.classList.remove('hidden');
+  empty.classList.add('hidden');
+
+  grid.innerHTML = customers.map(c => {
+    const lastVisit = getLastVisitDate(c);
+    const overdue = isOverdue(c);
+    const visitCount = (c.visits || []).length;
+    const totalRevenue = calcCustomerTotalRevenue(c);
+    const daysSince = lastVisit
+      ? Math.floor((new Date() - new Date(lastVisit)) / (1000 * 60 * 60 * 24))
+      : null;
+
+    return `
+      <div class="customer-card" onclick="Router.navigate('customer-detail', {customerId: '${c.id}'})">
+        <div class="flex items-start gap-3 mb-3">
+          <div class="avatar flex-shrink-0">${getInitials(c.name)}</div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-sm font-bold text-gray-900">${c.name}</span>
+              ${overdue ? '<span class="badge-overdue">要フォロー</span>' : '<span class="badge-ok">定期来店</span>'}
+            </div>
+            <div class="text-xs text-gray-400 mt-0.5">${c.phone || '--'}</div>
+          </div>
+          <svg class="w-4 h-4 text-gray-300 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 text-center border-t border-gray-50 pt-3">
+          <div>
+            <div class="text-sm font-bold text-gray-800">${visitCount}</div>
+            <div class="text-xs text-gray-400">来店回数</div>
+          </div>
+          <div>
+            <div class="text-sm font-bold text-gray-800">¥${totalRevenue.toLocaleString('ja-JP')}</div>
+            <div class="text-xs text-gray-400">累計</div>
+          </div>
+          <div>
+            <div class="text-sm font-bold ${overdue ? 'text-red-500' : 'text-gray-800'}">
+              ${daysSince !== null ? daysSince + '日前' : '--'}
+            </div>
+            <div class="text-xs text-gray-400">最終来店</div>
+          </div>
+        </div>
+
+        ${c.tags && c.tags.length > 0 ? `
+          <div class="flex flex-wrap gap-1 mt-2.5">
+            ${c.tags.map(tag => `<span class="text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full font-medium">${tag}</span>`).join('')}
+          </div>` : ''}
+      </div>`;
+  }).join('');
+}
+
+/* =====================================================
+   顧客詳細のレンダリング
+===================================================== */
+function renderCustomerDetail(customerId) {
+  const customer = (DUMMY_DATA.customers || []).find(c => c.id === customerId);
+  if (!customer) {
+    document.getElementById('page-customer-detail').innerHTML = `
+      <div class="text-center py-20 text-gray-400">
+        顧客データが見つかりませんでした（ID: ${customerId}）
+      </div>`;
+    return;
+  }
+
+  const overdue = isOverdue(customer);
+  const visitCount = (customer.visits || []).length;
+  const totalRevenue = calcCustomerTotalRevenue(customer);
+  const lastVisit = getLastVisitDate(customer);
+  const nextRecommend = calcNextRecommendDate(customer);
+
+  // プロフィール
+  document.getElementById('detail-avatar').textContent = getInitials(customer.name);
+  document.getElementById('detail-name').textContent = customer.name;
+  document.getElementById('detail-phone').textContent = customer.phone || '--';
+  document.getElementById('detail-registered').textContent = '登録日：' + formatDate(customer.registeredAt);
+  document.getElementById('detail-visit-count').textContent = visitCount;
+  document.getElementById('detail-total-revenue').textContent = '¥' + totalRevenue.toLocaleString('ja-JP');
+  document.getElementById('detail-last-visit').textContent = lastVisit
+    ? formatDate(lastVisit)
+    : '来店記録なし';
+  document.getElementById('detail-next-recommend').textContent = nextRecommend
+    ? `${nextRecommend.getMonth() + 1}/${nextRecommend.getDate()}頃`
+    : '--';
+  document.getElementById('detail-memo').textContent = customer.memo || 'メモなし';
+
+  // 要フォローバッジ
+  const overdueBadge = document.getElementById('detail-overdue-badge');
+  if (overdue) {
+    overdueBadge.classList.remove('hidden');
+  } else {
+    overdueBadge.classList.add('hidden');
+  }
+
+  // LINE送信ボタン（要フォロー時のみ強調）
+  const lineBtn = document.getElementById('detail-line-btn');
+  lineBtn.dataset.customerId = customerId;
+  lineBtn.disabled = false;
+  lineBtn.classList.remove('sending', 'sent');
+  lineBtn.innerHTML = `
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+    </svg>
+    LINE送信`;
+
+  // 施術履歴タイムライン
+  const visits = [...(customer.visits || [])].sort((a, b) => new Date(b.date) - new Date(a.date));
+  const timeline = document.getElementById('detail-timeline');
+
+  if (visits.length === 0) {
+    timeline.innerHTML = `<div class="text-center py-8 text-gray-400 text-sm">施術履歴がありません</div>`;
+    return;
+  }
+
+  timeline.innerHTML = visits.map((visit, i) => {
+    const menuColors = ['bg-indigo-400', 'bg-purple-400', 'bg-pink-400', 'bg-amber-400', 'bg-green-400'];
+    const dotColor = menuColors[i % menuColors.length];
+    return `
+      <div class="timeline-item">
+        <div class="timeline-dot ${dotColor} border-white">
+          <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <div class="bg-gray-50 rounded-xl p-4">
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-xs font-semibold text-gray-400">${formatDate(visit.date)}</div>
+            ${visit.price ? `<div class="text-sm font-bold text-gray-800">¥${(visit.price).toLocaleString('ja-JP')}</div>` : ''}
+          </div>
+          <div class="text-sm font-bold text-gray-800 mb-1">${visit.menu || '--'}</div>
+          ${visit.stylist ? `<div class="text-xs text-gray-500">担当：${visit.stylist}</div>` : ''}
+          ${visit.note ? `<div class="text-xs text-gray-500 mt-1.5 italic">"${visit.note}"</div>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* =====================================================
+   LINE送信ページのレンダリング
+===================================================== */
+function renderLineSend() {
+  const overdueCustomers = (DUMMY_DATA.customers || []).filter(isOverdue);
+  document.getElementById('line-target-count').textContent = overdueCustomers.length;
+
+  const list = document.getElementById('line-send-list');
+  const empty = document.getElementById('line-send-empty');
+
+  if (overdueCustomers.length === 0) {
+    list.classList.add('hidden');
+    empty.classList.remove('hidden');
+    return;
+  }
+
+  list.classList.remove('hidden');
+  empty.classList.add('hidden');
+
+  list.innerHTML = overdueCustomers.map(customer => {
+    const lastVisit = getLastVisitDate(customer);
+    const message = generateLineMessage(customer);
+    const daysSince = lastVisit
+      ? Math.floor((new Date() - new Date(lastVisit)) / (1000 * 60 * 60 * 24))
+      : null;
+
+    return `
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5" id="line-card-${customer.id}">
+        <div class="flex items-start gap-4">
+          <!-- 顧客情報 -->
+          <div class="flex-1">
+            <div class="flex items-center gap-3 mb-1">
+              <div class="avatar flex-shrink-0">${getInitials(customer.name)}</div>
+              <div>
+                <div class="text-sm font-bold text-gray-900">${customer.name}</div>
+                <div class="text-xs text-red-500 font-medium">
+                  ${daysSince !== null ? `${daysSince}日間未来店` : '来店記録なし'}
+                </div>
+              </div>
+            </div>
+
+            <!-- メッセージプレビュー -->
+            <div class="mt-3 bg-green-50 border border-green-100 rounded-xl p-3">
+              <div class="flex items-center gap-1.5 mb-2">
+                <div class="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center">
+                  <svg class="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 14.414l-3.707-3.707 1.414-1.414L11 13.586l5.293-5.293 1.414 1.414L11 16.414z"/>
+                  </svg>
+                </div>
+                <span class="text-xs font-semibold text-green-700">LINEメッセージプレビュー</span>
+              </div>
+              <pre class="text-xs text-gray-700 leading-relaxed whitespace-pre-wrap font-sans">${message}</pre>
+            </div>
+          </div>
+
+          <!-- 送信ボタン -->
+          <div class="flex flex-col items-end gap-2 flex-shrink-0">
+            <button
+              id="send-btn-${customer.id}"
+              class="btn-line text-xs px-3 py-2"
+              onclick="handleSingleLineSend('${customer.id}', this)"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+              </svg>
+              送信
+            </button>
+            <button
+              class="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+              onclick="Router.navigate('customer-detail', {customerId: '${customer.id}'})"
+            >
+              詳細を見る
+            </button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* =====================================================
+   インタラクション：LINE送信
+===================================================== */
+
+/**
+ * 単一顧客への LINE 送信（送信中 → 完了アニメーション）
+ */
+function handleSingleLineSend(customerId, btn) {
+  if (btn.disabled) return;
+
+  // 送信中
+  btn.disabled = true;
+  btn.classList.add('sending');
+  btn.innerHTML = `
+    <svg class="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+    </svg>
+    送信中...`;
+
+  setTimeout(() => {
+    btn.classList.remove('sending');
+    btn.classList.add('sent');
+    btn.innerHTML = `
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+      </svg>
+      送信完了`;
+
+    // カードをフェードアウト
+    setTimeout(() => {
+      const card = document.getElementById(`line-card-${customerId}`);
+      if (card) {
+        card.style.transition = 'opacity 0.4s, transform 0.4s';
+        card.style.opacity = '0.4';
+        card.style.transform = 'scale(0.98)';
+      }
+    }, 600);
+  }, 1500);
+}
+
+/**
+ * 一括 LINE 送信
+ */
+function handleBulkLineSend() {
+  const overdueCustomers = (DUMMY_DATA.customers || []).filter(isOverdue);
+  if (overdueCustomers.length === 0) return;
+
+  const bulkBtn = document.getElementById('bulk-send-btn');
+  bulkBtn.textContent = '送信中...';
+  bulkBtn.disabled = true;
+
+  // 各送信ボタンを順番にアニメーション
+  overdueCustomers.forEach((c, i) => {
+    setTimeout(() => {
+      const btn = document.getElementById(`send-btn-${c.id}`);
+      if (btn && !btn.disabled) {
+        handleSingleLineSend(c.id, btn);
+      }
+    }, i * 300);
+  });
+
+  setTimeout(() => {
+    bulkBtn.textContent = '✓ 一括送信完了';
+    bulkBtn.classList.add('opacity-75');
+
+    // 確認モーダル
+    const msg = document.getElementById('modal-line-confirm-msg');
+    msg.textContent = `${overdueCustomers.length}名にLINEメッセージを送信しました。`;
+    openModal('modal-line-confirm');
+  }, overdueCustomers.length * 300 + 1800);
+}
+
+/**
+ * 顧客詳細からの LINE 送信
+ */
+function handleLineSendFromDetail() {
+  const btn = document.getElementById('detail-line-btn');
+  if (btn.disabled) return;
+
+  btn.disabled = true;
+  btn.classList.add('sending');
+  btn.innerHTML = `
+    <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+    </svg>
+    送信中...`;
+
+  setTimeout(() => {
+    btn.classList.remove('sending');
+    btn.classList.add('sent');
+    btn.innerHTML = `
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+      </svg>
+      送信完了`;
+
+    const customerId = btn.dataset.customerId;
+    const customer = (DUMMY_DATA.customers || []).find(c => c.id === customerId);
+    const msg = document.getElementById('modal-line-confirm-msg');
+    msg.textContent = customer
+      ? `${customer.name}さんにLINEメッセージを送信しました。`
+      : 'LINEメッセージを送信しました。';
+    openModal('modal-line-confirm');
+  }, 1500);
+}
+
+/* =====================================================
+   インタラクション：モーダル
+===================================================== */
+
+function openModal(modalId) {
+  const overlay = document.getElementById('modal-overlay');
+  overlay.classList.remove('hidden');
+  // すべてのモーダルを非表示にしてから対象を表示
+  overlay.querySelectorAll('[id^="modal-"]').forEach(m => m.classList.add('hidden'));
+  const modal = document.getElementById(modalId);
+  if (modal) modal.classList.remove('hidden');
+}
+
+function closeModal(event) {
+  if (event && event.target !== document.getElementById('modal-overlay')) return;
+  document.getElementById('modal-overlay').classList.add('hidden');
+}
+
+// overlayクリック以外からも閉じられるよう
+function closeModal(event) {
+  if (event === undefined || event.target === document.getElementById('modal-overlay')) {
+    document.getElementById('modal-overlay').classList.add('hidden');
+  }
+}
+
+/**
+ * 予約追加モーダルを開く
+ */
+function openAddAppointmentModal(defaultDate = '') {
+  // 顧客セレクト初期化
+  const select = document.getElementById('modal-customer-select');
+  select.innerHTML = (DUMMY_DATA.customers || [])
+    .map(c => `<option value="${c.id}">${c.name}</option>`)
+    .join('');
+
+  // 日付
+  const dateInput = document.getElementById('modal-date');
+  dateInput.value = defaultDate || todayString();
+
+  openModal('modal-add-appointment');
+}
+
+/**
+ * 予約追加処理（デモ：アラートのみ）
+ */
+function handleAddAppointment() {
+  const customerId = document.getElementById('modal-customer-select').value;
+  const date = document.getElementById('modal-date').value;
+  const time = document.getElementById('modal-time').value;
+  const menu = document.getElementById('modal-menu').value;
+  const stylist = document.getElementById('modal-stylist').value;
+
+  if (!date || !time) {
+    alert('日付と時間を入力してください。');
+    return;
+  }
+
+  // DUMMY_DATA に追加（デモ用）
+  const customer = (DUMMY_DATA.customers || []).find(c => c.id === customerId);
+  const newAppt = {
+    id: 'appt-' + Date.now(),
+    customerId,
+    customerName: customer ? customer.name : '',
+    date,
+    time,
+    menu: menu || 'カット',
+    stylist: stylist || '--',
+    status: 'confirmed'
+  };
+
+  if (!DUMMY_DATA.appointments) DUMMY_DATA.appointments = [];
+  DUMMY_DATA.appointments.push(newAppt);
+
+  document.getElementById('modal-overlay').classList.add('hidden');
+
+  // 現在のページを再描画
+  if (Router.currentPage === 'appointments') renderAppointments();
+  if (Router.currentPage === 'dashboard') renderDashboard();
+}
+
+/* =====================================================
+   初期化
+===================================================== */
+document.addEventListener('DOMContentLoaded', () => {
+  // 今日の日付表示
+  const today = new Date();
+  const DOW = ['日', '月', '火', '水', '木', '金', '土'];
+  document.getElementById('today-display').textContent =
+    `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日(${DOW[today.getDay()]})`;
+
+  // ダッシュボードを初期表示
+  Router.navigate('dashboard');
+});
+</script>
+</body>
+</html>
